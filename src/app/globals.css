@@ -90,6 +90,23 @@
   --radius: 0.5rem;
 }
 
+/* Graph paper: major lines every 5 squares; multiply keeps it under the ink. */
+@utility graph-paper {
+  --grid-major: color-mix(in oklab, var(--color-ink-brown) 16%, transparent);
+  --grid-minor: color-mix(in oklab, var(--color-ink-brown) 8%, transparent);
+  background-image:
+    linear-gradient(to right, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-minor) 1px, transparent 1px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+  mix-blend-mode: multiply;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

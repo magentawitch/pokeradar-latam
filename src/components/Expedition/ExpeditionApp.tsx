@@ -12,9 +12,9 @@ const ExpeditionMap = dynamic(
   { ssr: false, loading: () => <MapFallback /> },
 );
 
-interface ExpeditionAppProps  {
+interface ExpeditionAppProps {
   roster: BiomeRoster;
-};
+}
 
 export function ExpeditionApp({ roster }: ExpeditionAppProps) {
   return <ExpeditionMap roster={roster} />;

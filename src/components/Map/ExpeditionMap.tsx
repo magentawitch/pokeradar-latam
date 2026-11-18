@@ -1,30 +1,63 @@
 "use client";
 
-import Map from "react-map-gl/maplibre";
+import { useCallback } from "react";
+import { setWorkerUrl, type TransformStyleFunction } from "maplibre-gl";
+import Map, { type MapEvent } from "react-map-gl/maplibre";
 import { BIOMES } from "@/lib/biomes/biomes";
 import type { BiomeRoster } from "@/lib/biomes/types";
+import {
+  createLatAmConstrain,
+  INITIAL_BOUNDS,
+  MIN_ZOOM,
+} from "@/lib/map/camera";
+import {
+  POSITRON_STYLE_URL,
+  toExpeditionStyle,
+} from "@/lib/map/expeditionStyle";
 import { BiomeMarker } from "./BiomeMarker";
 
-const POSITRON_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+// MapLibre looks for its worker beside its own bundle chunk, which isn't where
+// the bundler puts it. This `new URL` makes the bundler emit the worker as an
+// asset and hand back its served URL.
+setWorkerUrl(
+  new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href,
+);
 
-// Mexico to Tierra del Fuego, Galápagos to the Brazilian coast.
-const LATIN_AMERICA_BOUNDS: [[number, number], [number, number]] = [
-  [-118, -56],
-  [-34, 33],
-];
+// Restyles positron after MapLibre fetches it and before the first paint.
+const transformStyle: TransformStyleFunction = (_previous, next) =>
+  toExpeditionStyle(next);
 
 interface ExpeditionMapProps {
   roster: BiomeRoster;
 }
 
 export function ExpeditionMap({ roster }: ExpeditionMapProps) {
+  const handleLoad = useCallback((event: MapEvent) => {
+    const map = event.target;
+    map.touchZoomRotate.disableRotation();
+    map.keyboard.disableRotation();
+    map.setTransformConstrain(
+      createLatAmConstrain(() => {
+        const container = map.getContainer();
+        return { width: container.clientWidth, height: container.clientHeight };
+      }),
+    );
+  }, []);
+
   return (
     <Map
       initialViewState={{
-        bounds: LATIN_AMERICA_BOUNDS,
+        bounds: INITIAL_BOUNDS,
         fitBoundsOptions: { padding: 24 },
       }}
       mapStyle={POSITRON_STYLE_URL}
+      transformStyle={transformStyle}
+      minZoom={MIN_ZOOM}
+      maxPitch={0}
+      dragRotate={false}
+      pitchWithRotate={false}
+      touchPitch={false}
+      onLoad={handleLoad}
       style={{ position: "absolute", inset: 0 }}
     >
       {BIOMES.map((biome) => (

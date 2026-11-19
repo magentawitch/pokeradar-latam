@@ -3,6 +3,7 @@ import { CompassRose } from "@/components/Decor/CompassRose";
 import { GraphPaperOverlay } from "@/components/Decor/GraphPaperOverlay";
 import { ExpeditionApp } from "@/components/Expedition/ExpeditionApp";
 import { MapFallback } from "@/components/Map/MapFallback";
+import { StampBook } from "@/components/StampBook/StampBook";
 import { getBiomeRoster } from "@/lib/pokeapi/roster";
 
 export default async function Home() {
@@ -13,6 +14,7 @@ export default async function Home() {
       <Suspense fallback={<MapFallback />}>
         <ExpeditionApp roster={roster} />
       </Suspense>
+      <StampBook roster={roster} />
       <GraphPaperOverlay />
       <CompassRose className="absolute right-3 bottom-28 size-14 md:right-6 md:bottom-12 md:size-20" />
     </main>

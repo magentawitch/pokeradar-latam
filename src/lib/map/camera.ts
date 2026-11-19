@@ -2,13 +2,16 @@ import { LngLat, type TransformConstrainFunction } from "maplibre-gl";
 import { TILE_SIZE, toLat, toLng, toX, toY } from "./mercator";
 
 /**
- * The initial fit: every destination, Easter Island across to Fernando de
- * Noronha and Cueva de las Manos up to the Bermuda Triangle, with a little
- * margin around the stamps.
+ * The initial fit, centred on South America and a little closer than the
+ * full pan width, so desktop can pan sideways. The box itself stops short of
+ * Easter Island and the Bermuda Triangle, but desktop's height-limited fit
+ * still shows every destination; phones open at MIN_ZOOM either way. The
+ * south edge sits well below Cueva de las Manos so its stamp clears the hint
+ * bar.
  */
 export const INITIAL_BOUNDS: [[number, number], [number, number]] = [
-  [-112, -50],
-  [-29, 28],
+  [-100, -50],
+  [-32, 22],
 ];
 
 /** Keeps the opening stamps clear of the HUD: title on top, hint bar and compass below. */

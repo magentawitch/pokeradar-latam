@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  dreamWorldSpriteUrl,
   formatDexNumber,
   formatHeight,
   formatPokemonName,
   formatWeight,
   normalizeFlavorText,
+  officialArtworkUrl,
   staticSpriteUrl,
   statTotal,
   strongestStat,
@@ -20,6 +22,20 @@ describe("formatPokemonName", () => {
     ["mewtwo", "Mewtwo"],
   ])("%s → %s", (slug, expected) => {
     expect(formatPokemonName(slug)).toBe(expected);
+  });
+});
+
+describe("stamp artwork URLs", () => {
+  it("builds the dream world SVG URL from the dex id", () => {
+    expect(dreamWorldSpriteUrl(151)).toBe(
+      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/151.svg",
+    );
+  });
+
+  it("builds the official artwork fallback URL from the dex id", () => {
+    expect(officialArtworkUrl(25)).toBe(
+      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+    );
   });
 });
 

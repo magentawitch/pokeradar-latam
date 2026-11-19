@@ -17,8 +17,9 @@ interface BiomeClusterMarkerProps {
 }
 
 /**
- * Several nearby destinations as one stamp: a dark double ring (not pastel, so it reads as a group) with their
- * combined Pokémon count. Picking it zooms in until they separate.
+ * Several nearby destinations as one stamp: a warm ink-brown double ring on cream
+ * (no habitat pastel, so it reads as a group) with their combined Pokémon
+ * count. Picking it zooms in until they separate.
  */
 export function BiomeClusterMarker({
   cluster,
@@ -36,7 +37,7 @@ export function BiomeClusterMarker({
             type="button"
             variant="stamp"
             size="stamp"
-            className="border-[4px] border-double border-ink bg-card text-ink"
+            className="border-[3px] border-double border-ink-brown bg-card text-ink-brown"
             aria-label={`${cluster.members.length} destinos (${places}), ${pokemonCount} Pokémon. Acercar`}
             onClick={() => onSelect(cluster.members)}
           >

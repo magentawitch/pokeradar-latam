@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Caveat, Fraunces, IBM_Plex_Mono, Nunito } from "next/font/google";
 import { Providers } from "./Providers";
 import "./globals.css";
@@ -12,10 +12,32 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
+const DESCRIPTION =
+  "Un diario de campo para explorar Latinoamérica y descubrir los Pokémon que habitan cada rincón del mapa.";
+
+// Absolute base for the og:image URL (from opengraph-image.tsx): Vercel's
+// production domain when deployed, localhost otherwise.
+const SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "PokéRadar - Diario de expedición",
-  description:
-    "Un diario de campo para explorar Latinoamérica y descubrir los Pokémon que habitan cada rincón del mapa.",
+  metadataBase: new URL(SITE_URL),
+  title: "PokéRadar · Diario de expedición",
+  description: DESCRIPTION,
+  applicationName: "PokéRadar",
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    siteName: "PokéRadar",
+    title: "PokéRadar · Diario de expedición",
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f3ebdd",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

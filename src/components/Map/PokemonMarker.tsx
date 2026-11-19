@@ -4,6 +4,11 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { Marker } from "react-map-gl/maplibre";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { RosterEntry } from "@/lib/biomes/types";
 import {
   formatPokemonName,
@@ -51,26 +56,33 @@ export function PokemonMarker({
           ease: "backOut",
         }}
       >
-        <Button
-          type="button"
-          id={pokemonMarkerDomId(entry.id)}
-          variant="specimen"
-          size="specimen"
-          // A toggle: pressed while its page is open; pressing again closes it.
-          aria-pressed={isSelected}
-          onClick={() => (isSelected ? onDeselect() : onSelect(entry.id))}
-        >
-          {/* Sprites carry wide transparent margins, so draw them past the ring. */}
-          <Image
-            src={staticSpriteUrl(entry.id)}
-            alt={formatPokemonName(entry.name)}
-            width={96}
-            height={96}
-            unoptimized
-            draggable={false}
-            className="size-[150%] max-w-none [image-rendering:pixelated]"
-          />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              id={pokemonMarkerDomId(entry.id)}
+              variant="specimen"
+              size="specimen"
+              // A toggle: pressed while its page is open; pressing again closes it.
+              aria-pressed={isSelected}
+              onClick={() => (isSelected ? onDeselect() : onSelect(entry.id))}
+            >
+              {/* Sprites carry wide transparent margins, so draw them past the ring. */}
+              <Image
+                src={staticSpriteUrl(entry.id)}
+                alt={formatPokemonName(entry.name)}
+                width={96}
+                height={96}
+                unoptimized
+                draggable={false}
+                className="size-[150%] max-w-none [image-rendering:pixelated]"
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={8}>
+            {formatPokemonName(entry.name)}
+          </TooltipContent>
+        </Tooltip>
       </motion.div>
     </Marker>
   );

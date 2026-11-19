@@ -1,5 +1,8 @@
 import type { HabitatName } from "@/lib/pokeapi/schemas";
-import type { BIOMES } from "./biomes";
+import type { BIOMES, REGIONS } from "./biomes";
+
+/** Geographic section of the destination index. */
+export type RegionId = (typeof REGIONS)[number]["id"];
 
 export type LngLat = readonly [lng: number, lat: number];
 
@@ -10,6 +13,7 @@ export type BiomeDefinition = {
   habitat: HabitatName;
   place: string;
   country: string;
+  region: RegionId;
   center: LngLat;
   /** Scatter radius for this location's Pokémon  */
   spreadKm: number;

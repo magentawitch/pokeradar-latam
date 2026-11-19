@@ -18,12 +18,14 @@ import {
   MIN_ZOOM,
 } from "@/lib/map/camera";
 import { clusterStamps } from "@/lib/map/clusters";
+import { DOODLE_MAX_ZOOM, DOODLES } from "@/lib/map/doodles";
 import {
   POSITRON_STYLE_URL,
   toExpeditionStyle,
 } from "@/lib/map/expeditionStyle";
 import { BiomeClusterMarker } from "./BiomeClusterMarker";
 import { BiomeMarker } from "./BiomeMarker";
+import { MapDoodle } from "./MapDoodle";
 import { PokemonMarker } from "./PokemonMarker";
 import { RevealSweep } from "./RevealSweep";
 
@@ -91,6 +93,10 @@ export function ExpeditionMap({
     [zoom, activeBiomeId],
   );
 
+  // Doodles decorate the continental view; they'd float oddly over a location.
+  const showDoodles =
+    zoom !== null && zoom <= DOODLE_MAX_ZOOM && activeBiomeId === null;
+
   const handleMoveEnd = useCallback(
     (event: ViewStateChangeEvent) => {
       setZoom(event.viewState.zoom);
@@ -137,6 +143,8 @@ export function ExpeditionMap({
       onMoveEnd={handleMoveEnd}
       style={{ position: "absolute", inset: 0 }}
     >
+      {showDoodles &&
+        DOODLES.map((doodle) => <MapDoodle key={doodle.id} doodle={doodle} />)}
       {stamps.map((stamp) => {
         const [onlyBiome] = stamp.members;
         if (stamp.members.length === 1 && onlyBiome) {

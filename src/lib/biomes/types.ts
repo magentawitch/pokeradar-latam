@@ -1,24 +1,12 @@
 import type { HabitatName } from "@/lib/pokeapi/schemas";
-
-export type BiomeId =
-  | "iguazu"
-  | "amazonia"
-  | "pampas"
-  | "llanos"
-  | "aconcagua"
-  | "atacama"
-  | "cueva-de-las-manos"
-  | "caribe"
-  | "cdmx"
-  | "buenos-aires"
-  | "sao-paulo"
-  | "galapagos";
+import type { BIOMES } from "./biomes";
 
 export type LngLat = readonly [lng: number, lat: number];
 
-export type BiomeConfig = {
+/** The shape BIOMES is checked against; its ids are plain strings. */
+export type BiomeDefinition = {
   /** Unique key; a habitat can map to several locations. */
-  id: BiomeId;
+  id: string;
   habitat: HabitatName;
   place: string;
   country: string;
@@ -33,14 +21,27 @@ export type BiomeConfig = {
   fieldNote: string;
 };
 
+/** Every configured location id, derived from BIOMES. */
+export type BiomeId = (typeof BIOMES)[number]["id"];
+
+export type BiomeConfig = BiomeDefinition & { id: BiomeId };
+
 /**  Minimal Gen 1 Pokémon (#1–151) reference: just the id and name from a PokéAPI
  * habitat listing, not full species data. */
 export type SpeciesRef = { id: number; name: string };
 
-export type RosterEntry = SpeciesRef & {
+/** A Pokémon dealt to a location, before it gets a map position. */
+export type AssignedEntry = SpeciesRef & {
   habitat: HabitatName;
   biomeId: BiomeId;
 };
+
+export type RosterEntry = AssignedEntry & {
+  /** Deterministic scatter position around the location's centre. */
+  position: LngLat;
+};
+
+export type AssignedRoster = Record<BiomeId, AssignedEntry[]>;
 
 /** Serializable server → client prop. */
 export type BiomeRoster = Record<BiomeId, RosterEntry[]>;

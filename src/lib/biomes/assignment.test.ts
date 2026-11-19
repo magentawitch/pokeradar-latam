@@ -1,65 +1,67 @@
 import { describe, expect, it } from "vitest";
-import { assignToBiomes, type SpeciesByHabitat } from "./assignment";
+import { assignToBiomes } from "./assignment";
 import { BIOMES } from "./biomes";
+import { GEN1_IDS_BY_HABITAT, SPECIES_BY_HABITAT } from "./gen1Fixture";
 import type { BiomeId } from "./types";
 
-// Gen 1 ids per PokéAPI habitat (pokemon-habitat/{name}, ids ≤ 151), checked live.
-const GEN1_IDS_BY_HABITAT = {
-  cave: [41, 42, 50, 51, 92, 93, 94, 95],
-  forest: [
-    10, 11, 12, 13, 14, 15, 16, 17, 18, 25, 26, 46, 47, 48, 49, 69, 70, 71, 102,
-    103, 127,
-  ],
-  grassland: [
-    1, 2, 3, 19, 20, 23, 24, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 43, 44, 45,
-    58, 59, 77, 78, 83, 84, 85, 96, 97, 108, 114, 115, 123, 125, 128,
-  ],
-  mountain: [
-    4, 5, 6, 35, 36, 56, 57, 66, 67, 68, 74, 75, 76, 104, 105, 126, 142, 143,
-  ],
-  rare: [144, 145, 146, 150, 151],
-  "rough-terrain": [21, 22, 27, 28, 81, 82, 111, 112],
-  sea: [72, 73, 86, 87, 90, 91, 116, 117, 120, 121, 131, 138, 139, 140, 141],
-  urban: [
-    52, 53, 63, 64, 65, 88, 89, 100, 101, 106, 107, 109, 110, 113, 122, 124,
-    132, 133, 134, 135, 136, 137,
-  ],
-  "waters-edge": [
-    7, 8, 9, 54, 55, 60, 61, 62, 79, 80, 98, 99, 118, 119, 129, 130, 147, 148,
-    149,
-  ],
-} satisfies Record<keyof SpeciesByHabitat, number[]>;
-
-const toSpecies = (ids: number[]) =>
-  // Reversed so the test also proves assignment sorts by id itself.
-  [...ids].reverse().map((id) => ({ id, name: `species-${id}` }));
-
-const SPECIES_BY_HABITAT: SpeciesByHabitat = {
-  cave: toSpecies(GEN1_IDS_BY_HABITAT.cave),
-  forest: toSpecies(GEN1_IDS_BY_HABITAT.forest),
-  grassland: toSpecies(GEN1_IDS_BY_HABITAT.grassland),
-  mountain: toSpecies(GEN1_IDS_BY_HABITAT.mountain),
-  rare: toSpecies(GEN1_IDS_BY_HABITAT.rare),
-  "rough-terrain": toSpecies(GEN1_IDS_BY_HABITAT["rough-terrain"]),
-  sea: toSpecies(GEN1_IDS_BY_HABITAT.sea),
-  urban: toSpecies(GEN1_IDS_BY_HABITAT.urban),
-  "waters-edge": toSpecies(GEN1_IDS_BY_HABITAT["waters-edge"]),
-};
-
 const EXPECTED_COUNTS: Record<BiomeId, number> = {
-  iguazu: 19,
-  amazonia: 21,
-  pampas: 18,
-  llanos: 17,
-  aconcagua: 18,
-  atacama: 8,
-  "cueva-de-las-manos": 8,
-  caribe: 15,
-  cdmx: 8,
-  "buenos-aires": 7,
-  "sao-paulo": 7,
-  galapagos: 5,
+  // waters-edge 19
+  iguazu: 5,
+  titicaca: 5,
+  pantanal: 5,
+  atitlan: 4,
+  // forest 21
+  amazonia: 5,
+  lacandona: 4,
+  monteverde: 4,
+  darien: 4,
+  "el-yunque": 4,
+  // grassland 35
+  pampas: 5,
+  llanos: 5,
+  patagonia: 5,
+  "gran-sabana": 5,
+  cerrado: 5,
+  "campos-uruguay": 5,
+  chaco: 5,
+  // mountain 18
+  aconcagua: 4,
+  "machu-picchu": 4,
+  chimborazo: 4,
+  masaya: 3,
+  izalco: 3,
+  // rough-terrain 8
+  atacama: 3,
+  uyuni: 3,
+  "valle-de-la-luna": 2,
+  // cave 8
+  "cueva-de-las-manos": 3,
+  cenotes: 3,
+  "actun-tunichil-muknal": 2,
+  // sea 15
+  "peninsula-valdes": 3,
+  "cayo-coco": 3,
+  roatan: 3,
+  "fernando-de-noronha": 3,
+  samana: 3,
+  // urban 22
+  cdmx: 5,
+  "buenos-aires": 5,
+  "sao-paulo": 4,
+  bogota: 4,
+  havana: 4,
+  // rare 5
+  "easter-island": 1,
+  catatumbo: 1,
+  nazca: 1,
+  "bermuda-triangle": 1,
+  galapagos: 1,
 };
+
+const MAX_PER_LOCATION = 5;
+
+const idsOf = (entries: readonly { id: number }[]) =>
+  entries.map((entry) => entry.id);
 
 describe("assignToBiomes", () => {
   const roster = assignToBiomes(SPECIES_BY_HABITAT, BIOMES);
@@ -84,25 +86,42 @@ describe("assignToBiomes", () => {
     expect(counts).toEqual(EXPECTED_COUNTS);
   });
 
-  it("splits grassland 18/17 between Pampa and Llanos, round-robin by id", () => {
-    expect(roster.pampas.map((entry) => entry.id).slice(0, 3)).toEqual([
-      1, 3, 20,
-    ]);
-    expect(roster.llanos.map((entry) => entry.id).slice(0, 3)).toEqual([
-      2, 19, 23,
-    ]);
-    expect([roster.pampas.length, roster.llanos.length]).toEqual([18, 17]);
+  it("never puts more than five Pokémon in one location", () => {
+    for (const entries of Object.values(roster)) {
+      expect(entries.length).toBeLessThanOrEqual(MAX_PER_LOCATION);
+    }
   });
 
-  it("splits urban 8/7/7 across CDMX, Buenos Aires and São Paulo", () => {
-    expect([
-      roster.cdmx.length,
-      roster["buenos-aires"].length,
-      roster["sao-paulo"].length,
-    ]).toEqual([8, 7, 7]);
-    expect(roster.cdmx[0]?.id).toBe(52);
-    expect(roster["buenos-aires"][0]?.id).toBe(53);
-    expect(roster["sao-paulo"][0]?.id).toBe(63);
+  it("deals grassland 5 to each of its 7 locations, round-robin by id", () => {
+    expect(idsOf(roster.pampas)).toEqual([1, 29, 38, 59, 97]);
+    expect(idsOf(roster.llanos)).toEqual([2, 30, 39, 77, 108]);
+    expect(idsOf(roster.chaco)).toEqual([24, 37, 58, 96, 128]);
+  });
+
+  it("splits urban 5/5/4/4/4, earlier locations taking the extra ones", () => {
+    expect(
+      [
+        roster.cdmx,
+        roster["buenos-aires"],
+        roster["sao-paulo"],
+        roster.bogota,
+        roster.havana,
+      ].map((entries) => entries[0]?.id),
+    ).toEqual([52, 53, 63, 64, 65]);
+  });
+
+  it("gives each rare location exactly one legendary, in location order", () => {
+    expect(
+      BIOMES.filter((biome) => biome.habitat === "rare").map((biome) =>
+        idsOf(roster[biome.id]),
+      ),
+    ).toEqual([[144], [145], [146], [150], [151]]);
+    expect(idsOf(roster.catatumbo)).toEqual([145]);
+    expect(idsOf(roster.galapagos)).toEqual([151]);
+  });
+
+  it("keeps Squirtle at Iguazú (the e2e flow relies on it)", () => {
+    expect(roster.iguazu[0]?.id).toBe(7);
   });
 
   it("only places a Pokémon in a location of its own habitat", () => {

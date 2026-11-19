@@ -3,6 +3,7 @@ import { cacheLife } from "next/cache";
 import { z } from "zod";
 import { assignToBiomes, type SpeciesByHabitat } from "@/lib/biomes/assignment";
 import { BIOMES } from "@/lib/biomes/biomes";
+import { placeRoster } from "@/lib/biomes/positions";
 import type { BiomeRoster, SpeciesRef } from "@/lib/biomes/types";
 import { fetchJson, idFromResourceUrl, POKEAPI_BASE_URL } from "./client";
 import {
@@ -52,5 +53,5 @@ export async function getBiomeRoster(): Promise<BiomeRoster> {
     speciesByHabitat[habitat] = speciesLists[index] ?? [];
   });
 
-  return assignToBiomes(speciesByHabitat, BIOMES);
+  return placeRoster(assignToBiomes(speciesByHabitat, BIOMES), BIOMES);
 }

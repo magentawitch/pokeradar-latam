@@ -78,7 +78,7 @@ export function ExploreGuide() {
           <LegendEntry
             sample={
               <span
-                className={`${stampSample} border-[4px] border-double border-ink bg-card text-ink`}
+                className={`${stampSample} border-[3px] border-double border-ink-brown bg-card text-ink-brown`}
               >
                 9
               </span>

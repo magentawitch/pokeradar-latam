@@ -3,30 +3,34 @@
 import { Marker } from "react-map-gl/maplibre";
 import { Button } from "@/components/ui/button";
 import type { BiomeConfig } from "@/lib/biomes/types";
-import { MarkerLabel } from "./MarkerLabel";
 
 interface BiomeMarkerProps {
   biome: BiomeConfig;
   pokemonCount: number;
+  onSelect: (biome: BiomeConfig) => void;
 }
 
-export function BiomeMarker({ biome, pokemonCount }: BiomeMarkerProps) {
+/** A round stamp with the biome's Pokémon count; the place name lives in the destination index. */
+export function BiomeMarker({
+  biome,
+  pokemonCount,
+  onSelect,
+}: BiomeMarkerProps) {
   const [longitude, latitude] = biome.center;
 
   return (
-    <Marker
-      longitude={longitude}
-      latitude={latitude}
-      anchor="top"
-      offset={[0, -8]}
-    >
+    <Marker longitude={longitude} latitude={latitude} anchor="center">
       <Button
         type="button"
         variant="stamp"
         size="stamp"
         style={{ color: `var(${biome.accent})` }}
+        aria-label={`${biome.place}, ${pokemonCount} Pokémon`}
+        onClick={() => onSelect(biome)}
       >
-        <MarkerLabel title={biome.place} detail={`${pokemonCount} Pokémon`} />
+        <span aria-hidden="true" className="text-ink">
+          {pokemonCount}
+        </span>
       </Button>
     </Marker>
   );

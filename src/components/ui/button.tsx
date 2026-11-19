@@ -19,9 +19,9 @@ const buttonVariants = cva(
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
         stamp:
-          "rounded-full border-[3px] border-current bg-card p-0 font-mono text-xs font-semibold shadow-sm hover:scale-110 focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-0",
+          "border-(color:--habitat-ink) bg-(--habitat-fill) rounded-full border-[3px] p-0 font-mono text-xs font-semibold shadow-sticker motion-safe:hover:scale-110 focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-0",
         specimen:
-          "rounded-full border-2 border-ink-brown bg-card p-0 shadow-sm hover:scale-110 hover:bg-paper focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-0 aria-pressed:border-ink aria-pressed:ring-3 aria-pressed:ring-ink/40",
+          "rounded-full border-2 border-ink-brown bg-card p-0 shadow-sm motion-safe:hover:scale-110 hover:bg-paper focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-0 aria-pressed:border-ink aria-pressed:ring-3 aria-pressed:ring-ink/40",
       },
       size: {
         default:

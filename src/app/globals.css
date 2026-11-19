@@ -9,9 +9,9 @@
  * Expedition Journal palette (light-first).
  * Contrast (WCAG AA, checked):
  *  - ink / ink-brown / ink-muted pass ≥ 4.5:1 on paper, card, land and sticky.
- *  - biome accents pass ≥ 4.5:1 as text on paper, card and sticky. On the land
- *    wash several only reach 3:1, so there they are used for strokes and stamp
- *    rings (UI, 3:1), never for small text.
+ *  - biome inks and fills are decorative: never text, never the only cue (the
+ *    habitat is always named in text). Stamps stay identifiable by their dark
+ *    number, which passes ≥ 4.5:1 on every fill.
  */
 @theme {
   --color-paper: #f3ebdd; /* page + map water */
@@ -25,15 +25,34 @@
   --color-rule: #e6dac4; /* hairlines, muted fills */
   --color-margin: #b4554a; /* index-card header rule; decorative only */
 
-  --color-biome-waters-edge: #2f625e;
-  --color-biome-forest: #3f5f30;
-  --color-biome-grassland: #6a5a16;
-  --color-biome-mountain: #5e4b3e;
-  --color-biome-rough-terrain: #86461f;
-  --color-biome-cave: #55435a;
-  --color-biome-sea: #2f5170;
-  --color-biome-urban: #7a3f2c;
-  --color-biome-rare: #86334f;
+  /* Habitats: a pastel fill and a deeper pastel ring; numbers in the label ink. */
+  --color-biome-waters-edge: #72c3b3;
+  --color-biome-waters-edge-fill: #c0ebe1;
+  --color-biome-forest: #86c27a;
+  --color-biome-forest-fill: #cdebc3;
+  --color-biome-grassland: #d6bc62;
+  --color-biome-grassland-fill: #f7e8ae;
+  --color-biome-mountain: #8fa0e0;
+  --color-biome-mountain-fill: #ccd5f7;
+  --color-biome-rough-terrain: #dfa47e;
+  --color-biome-rough-terrain-fill: #f8d5ba;
+  --color-biome-cave: #a890dc;
+  --color-biome-cave-fill: #dccdf5;
+  --color-biome-sea: #7bbadf;
+  --color-biome-sea-fill: #c2e4f5;
+  --color-biome-urban: #dd9088;
+  --color-biome-urban-fill: #f6c9c3;
+  --color-biome-rare: #db92b8;
+  --color-biome-rare-fill: #f5cbe0;
+  --color-habitat-label: #4a3b32;
+
+  /* Diary stickers: fixed inks, so habitat palette changes never reach them. */
+  --color-sticker-teal: #2f625e;
+  --color-sticker-green: #3f5f30;
+
+  /* Sticker die-cut: a cream edge around the shape, then a soft drop. */
+  --shadow-sticker:
+    0 0 0 2.5px var(--color-card), 0 1px 3px rgb(43 42 38 / 0.3);
 
   /* Type stamps: ink colours, each ≥ 4.5:1 as text on card, paper and rule. */
   --color-type-normal: #5f5a4e;
@@ -109,6 +128,48 @@
   --input: color-mix(in oklab, var(--color-ink-brown) 45%, transparent);
   --ring: var(--color-ink-brown);
   --radius: 0.5rem;
+}
+
+/*
+ * Sticker look for stamps and habitat dots: anything with data-habitat gets
+ * that habitat's ink and pastel fill as variables, applied with
+ * border-(color:--habitat-ink) bg-(--habitat-fill).
+ */
+[data-habitat="waters-edge"] {
+  --habitat-ink: var(--color-biome-waters-edge);
+  --habitat-fill: var(--color-biome-waters-edge-fill);
+}
+[data-habitat="forest"] {
+  --habitat-ink: var(--color-biome-forest);
+  --habitat-fill: var(--color-biome-forest-fill);
+}
+[data-habitat="grassland"] {
+  --habitat-ink: var(--color-biome-grassland);
+  --habitat-fill: var(--color-biome-grassland-fill);
+}
+[data-habitat="mountain"] {
+  --habitat-ink: var(--color-biome-mountain);
+  --habitat-fill: var(--color-biome-mountain-fill);
+}
+[data-habitat="rough-terrain"] {
+  --habitat-ink: var(--color-biome-rough-terrain);
+  --habitat-fill: var(--color-biome-rough-terrain-fill);
+}
+[data-habitat="cave"] {
+  --habitat-ink: var(--color-biome-cave);
+  --habitat-fill: var(--color-biome-cave-fill);
+}
+[data-habitat="sea"] {
+  --habitat-ink: var(--color-biome-sea);
+  --habitat-fill: var(--color-biome-sea-fill);
+}
+[data-habitat="urban"] {
+  --habitat-ink: var(--color-biome-urban);
+  --habitat-fill: var(--color-biome-urban-fill);
+}
+[data-habitat="rare"] {
+  --habitat-ink: var(--color-biome-rare);
+  --habitat-fill: var(--color-biome-rare-fill);
 }
 
 /* Graph paper: major lines every 5 squares; multiply keeps it under the ink. */

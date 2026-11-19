@@ -2,6 +2,11 @@
 
 import { Marker } from "react-map-gl/maplibre";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { BiomeConfig } from "@/lib/biomes/types";
 
 interface BiomeMarkerProps {
@@ -10,7 +15,10 @@ interface BiomeMarkerProps {
   onSelect: (biome: BiomeConfig) => void;
 }
 
-/** A round stamp with the biome's Pokémon count; the place name lives in the destination index. */
+/**
+ * A round stamp with the biome's Pokémon count. The place name shows in a
+ * tooltip on hover or focus, and in the destination index.
+ */
 export function BiomeMarker({
   biome,
   pokemonCount,
@@ -20,18 +28,26 @@ export function BiomeMarker({
 
   return (
     <Marker longitude={longitude} latitude={latitude} anchor="center">
-      <Button
-        type="button"
-        variant="stamp"
-        size="stamp"
-        style={{ color: `var(${biome.accent})` }}
-        aria-label={`${biome.place}, ${pokemonCount} Pokémon`}
-        onClick={() => onSelect(biome)}
-      >
-        <span aria-hidden="true" className="text-ink">
-          {pokemonCount}
-        </span>
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="stamp"
+            size="stamp"
+            data-habitat={biome.habitat}
+            aria-label={`${biome.place}, ${pokemonCount} Pokémon`}
+            onClick={() => onSelect(biome)}
+          >
+            <span aria-hidden="true" className="text-habitat-label">
+              {pokemonCount}
+            </span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={6}>
+          <span className="font-semibold">{biome.place}</span>
+          <span className="text-ink-muted">· {biome.country}</span>
+        </TooltipContent>
+      </Tooltip>
     </Marker>
   );
 }

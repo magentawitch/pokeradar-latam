@@ -53,6 +53,54 @@
   --color-sticker-teal: #2f625e;
   --color-sticker-green: #3f5f30;
 
+  /* Hanko vermilion: the stamp-book pill's new-stamps badge; card-coloured
+     text on it is 6:1. */
+  --color-hanko: #a33a2c;
+
+  /* Stamp-book pill feedback on a new discovery: the icon thumps down like a
+     rubber stamp, the count pops in the habitat's ink, and the hanko badge
+     is pressed on (its tilt lives in `rotate`, apart from these transforms). */
+  --animate-pill-stamp: pill-stamp 0.5s ease-out;
+  --animate-count-pop: count-pop 0.9s ease-out;
+  --animate-hanko-in: hanko-in 0.35s cubic-bezier(0.3, 1.6, 0.6, 1);
+
+  @keyframes pill-stamp {
+    0%,
+    100% {
+      transform: none;
+    }
+    30% {
+      transform: translateY(2px) scale(1.12, 0.72);
+    }
+    60% {
+      transform: translateY(-1px) scale(0.95, 1.08);
+    }
+  }
+  @keyframes count-pop {
+    0%,
+    100% {
+      transform: none;
+    }
+    25% {
+      transform: scale(1.25);
+      color: var(--habitat-stamp-text);
+    }
+    70% {
+      transform: none;
+      color: var(--habitat-stamp-text);
+    }
+  }
+  @keyframes hanko-in {
+    from {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
   /* Sticker die-cut: a cream edge around the shape, then a soft drop. */
   --shadow-sticker:
     0 0 0 2.5px var(--color-card), 0 1px 3px rgb(43 42 38 / 0.3);

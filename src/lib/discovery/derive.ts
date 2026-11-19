@@ -103,6 +103,35 @@ export function freshStampIds(
   );
 }
 
+/**
+ * Habitat → how many fresh stamps its page holds, only for pages with any:
+ * the pages to mark as new, in page order.
+ */
+export function freshCountsByHabitat(
+  sections: readonly StampSection[],
+  freshIds: ReadonlySet<number>,
+): Map<HabitatName, number> {
+  const counts = new Map<HabitatName, number>();
+  for (const section of sections) {
+    const count = section.stamps.filter((stamp) =>
+      freshIds.has(stamp.id),
+    ).length;
+    if (count > 0) counts.set(section.habitat, count);
+  }
+  return counts;
+}
+
+/** The habitat whose page holds this Pokémon's stamp; null if none does. */
+export function stampHabitat(
+  sections: readonly StampSection[],
+  id: number,
+): HabitatName | null {
+  return (
+    sections.find((section) => section.stamps.some((stamp) => stamp.id === id))
+      ?.habitat ?? null
+  );
+}
+
 /** Lets the book open (or the page turn) before the first stamp lands. */
 const FIRST_STAMP_DELAY_S = 0.2;
 const STAMP_STAGGER_S = 0.12;

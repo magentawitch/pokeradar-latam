@@ -5,8 +5,10 @@ import { SPECIES_BY_HABITAT } from "@/lib/biomes/gen1Fixture";
 import { placeRoster } from "@/lib/biomes/positions";
 import {
   formatStampDate,
+  freshCountsByHabitat,
   freshStampIds,
   planStamping,
+  stampHabitat,
   stampRotation,
   stampSections,
 } from "./derive";
@@ -146,5 +148,36 @@ describe("planStamping", () => {
 
   it("has no page to open on without fresh stamps", () => {
     expect(planStamping(sections, new Set()).firstPageIndex).toBeNull();
+  });
+});
+
+describe("freshCountsByHabitat", () => {
+  const sections = stampSections(roster, new Map());
+
+  it("counts the fresh stamps of each page that has any, in page order", () => {
+    // Magikarp is in Orillas; Caterpie and Pikachu in Bosques.
+    expect([...freshCountsByHabitat(sections, new Set([25, 10, 129]))]).toEqual(
+      [
+        ["waters-edge", 1],
+        ["forest", 2],
+      ],
+    );
+  });
+
+  it("is empty without fresh stamps", () => {
+    expect(freshCountsByHabitat(sections, new Set()).size).toBe(0);
+  });
+});
+
+describe("stampHabitat", () => {
+  const sections = stampSections(roster, new Map());
+
+  it("finds the page holding a Pokémon's stamp", () => {
+    expect(stampHabitat(sections, 25)).toBe("forest");
+    expect(stampHabitat(sections, 129)).toBe("waters-edge");
+  });
+
+  it("is null for a Pokémon outside the roster", () => {
+    expect(stampHabitat(sections, 999)).toBeNull();
   });
 });

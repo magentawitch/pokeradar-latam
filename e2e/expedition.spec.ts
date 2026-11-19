@@ -244,6 +244,9 @@ test("opening a card leaves a stamp in the book, one habitat per page", async ({
   // The count is in the pill's name, so this also checks it went to 1.
   const trigger = page.getByRole("button", { name: /^Sellos 1\/151/ });
   const book = page.getByRole("dialog", { name: "Libro de sellos" });
+  // The hanko badge counts the new stamp until the book is opened.
+  await expect(trigger).toHaveAccessibleName(/· 1 sello nuevo ·/);
+  await expect(trigger.getByText("+1")).toBeVisible();
   await trigger.click();
 
   // Desktop pages by folder tabs; phones by ink dots (the tabs are hidden).
@@ -319,6 +322,9 @@ test("opening a card leaves a stamp in the book, one habitat per page", async ({
   await page.keyboard.press("Escape");
   await expect(book).toHaveCount(0);
   await expect(trigger).toBeFocused();
+  // Opening the book cleared the badge.
+  await expect(trigger).not.toHaveAccessibleName(/sello nuevo/);
+  await expect(trigger.getByText("+1")).toHaveCount(0);
 
   // Stored in localStorage: still there after a reload.
   await page.reload();

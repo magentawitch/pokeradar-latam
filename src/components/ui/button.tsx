@@ -19,7 +19,9 @@ const buttonVariants = cva(
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
         stamp:
-          "flex-col border-0 bg-transparent before:size-4 before:rounded-full before:border-[3px] before:border-current before:bg-card before:shadow-sm focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-0",
+          "rounded-full border-[3px] border-current bg-card p-0 font-mono text-xs font-semibold shadow-sm hover:scale-110 focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-0",
+        specimen:
+          "rounded-full border-2 border-ink-brown bg-card p-0 shadow-sm hover:scale-110 hover:bg-paper focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-0 aria-pressed:border-ink aria-pressed:ring-3 aria-pressed:ring-ink/40",
       },
       size: {
         default:
@@ -33,7 +35,8 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
-        stamp: "gap-1 rounded-md",
+        stamp: "size-8 md:size-9",
+        specimen: "size-10 md:size-11",
       },
     },
     defaultVariants: {

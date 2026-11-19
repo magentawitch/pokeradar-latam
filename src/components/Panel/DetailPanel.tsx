@@ -54,7 +54,7 @@ export function DetailPanel({ entry, onClose }: DetailPanelProps) {
         showCloseButton={false}
         // Without a location line there is nothing to describe the dialog.
         {...(biome ? {} : { "aria-describedby": undefined })}
-        className="top-auto right-4 bottom-3 left-4 flex max-h-[85dvh] w-auto flex-col max-w-none translate-x-0 translate-y-0 rounded-none bg-transparent p-0 ring-0 sm:max-w-none md:top-1/2 md:right-auto md:bottom-auto md:left-1/2 md:w-[28rem] md:-translate-x-1/2 md:-translate-y-1/2 focus:outline-none"
+        className="top-auto right-4 bottom-3 left-4 flex max-h-[85dvh] w-auto flex-col max-w-none translate-x-0 translate-y-0 rounded-none bg-transparent p-0 ring-0 sm:max-w-none md:top-1/2 md:right-auto md:bottom-auto md:left-1/2 md:w-md md:-translate-x-1/2 md:-translate-y-1/2 focus:outline-none"
         // Focus the card itself, not the first tab: Radix would otherwise
         // show the tab's focus ring as if the user had tabbed to it. Tab
         // still reaches the tabs and Cerrar next.

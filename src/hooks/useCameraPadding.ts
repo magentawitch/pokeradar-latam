@@ -7,7 +7,7 @@ import { NO_PADDING, type CameraPadding } from "@/lib/map/reveal";
 const DESKTOP_QUERY = "(min-width: 48rem)";
 
 // This mirrors the DialogContent classes in DetailPanel.tsx.
-/** `md:w-[28rem]` */
+/** `md:w-md` (Tailwind's `--container-md`, 28rem) */
 const CARD_WIDTH_PX = 448;
 /** Extra room so a marker doesn't sit flush against the card edge. */
 const GUTTER_PX = 16;

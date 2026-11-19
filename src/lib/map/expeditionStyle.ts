@@ -21,7 +21,6 @@ export const MAP_COLORS = {
   inkBrown: "#5b3e29",
 } as const;
 
-
 type LayerOverride =
   | {
       type: "background";
@@ -42,7 +41,6 @@ type LayerOverride =
     };
 
 type TextField = NonNullable<SymbolLayerSpecification["layout"]>["text-field"];
-
 
 const SPANISH_NAME: TextField = [
   "coalesce",
@@ -86,7 +84,6 @@ const waterLabel: LayerOverride = {
   },
   layout: { "text-field": SPANISH_NAME },
 };
-
 
 export const LAYER_OVERRIDES: Readonly<Record<string, LayerOverride>> = {
   background: {

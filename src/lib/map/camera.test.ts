@@ -1,6 +1,7 @@
 import { LngLat } from "maplibre-gl";
 import { describe, expect, it } from "vitest";
-import { createLatAmConstrain, MIN_ZOOM } from "./camera";
+import { BIOMES } from "@/lib/biomes/biomes";
+import { createLatAmConstrain, INITIAL_BOUNDS, MIN_ZOOM } from "./camera";
 
 const desktop = createLatAmConstrain(() => ({ width: 1440, height: 900 }));
 
@@ -28,12 +29,27 @@ describe("createLatAmConstrain", () => {
 
   it("stops the camera from leaving the region", () => {
     const { center } = desktop(new LngLat(100, 70), 5);
-    expect(center.lng + (1440 / (512 * 2 ** 5)) * 180).toBeLessThanOrEqual(20.01);
+    expect(center.lng + (1440 / (512 * 2 ** 5)) * 180).toBeLessThanOrEqual(
+      20.01,
+    );
     expect(center.lat).toBeLessThan(50);
   });
 
   it("clamps zoom to the minimum on a phone", () => {
     const phone = createLatAmConstrain(() => ({ width: 375, height: 812 }));
     expect(phone(new LngLat(-76, -11), 0).zoom).toBe(MIN_ZOOM);
+  });
+});
+
+describe("INITIAL_BOUNDS", () => {
+  it("frames every destination", () => {
+    const [[west, south], [east, north]] = INITIAL_BOUNDS;
+    for (const { id, center } of BIOMES) {
+      const [lng, lat] = center;
+      expect(lng, id).toBeGreaterThan(west);
+      expect(lng, id).toBeLessThan(east);
+      expect(lat, id).toBeGreaterThan(south);
+      expect(lat, id).toBeLessThan(north);
+    }
   });
 });

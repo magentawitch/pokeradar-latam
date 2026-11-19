@@ -1,39 +1,30 @@
 import { LngLat, type TransformConstrainFunction } from "maplibre-gl";
+import { TILE_SIZE, toLat, toLng, toX, toY } from "./mercator";
 
 /**
- * The initial fit: South America, from the Llanos down to Patagonia (with room
- * below for its label, which hangs under the pin). Opens closer in than the
- * full region; Mexico City and the Caribbean are a short pan north.
+ * The initial fit: every destination, Easter Island across to Fernando de
+ * Noronha and Cueva de las Manos up to the Bermuda Triangle, with a little
+ * margin around the stamps.
  */
 export const INITIAL_BOUNDS: [[number, number], [number, number]] = [
-  [-82, -50],
-  [-35, 8],
+  [-112, -50],
+  [-29, 28],
 ];
 
-/** Mexico to Tierra del Fuego, Galápagos to the Brazilian coast: the pan limits. */
+/** Keeps the opening stamps clear of the HUD: title and compass on top, hint bar below. */
+export const INITIAL_PADDING = { top: 72, bottom: 56, left: 32, right: 32 };
+
+/** Mexico to Tierra del Fuego: the pan limits (only the latitudes are used). */
 export const LATIN_AMERICA_BOUNDS: [[number, number], [number, number]] = [
   [-118, -56],
   [-34, 33],
 ];
-
 
 export const MIN_ZOOM = 2;
 const MAX_ZOOM = 22;
 
 export const VIEW_LNG_LIMIT: [number, number] = [-170, 20];
 export const PAN_SLACK_Y = 0.35;
-
-const TILE_SIZE = 512;
-
-// Web Mercator in world units: x and y both run 0..1, y grows southward.
-const toX = (lng: number) => (lng + 180) / 360;
-const toY = (lat: number) => {
-  const phi = (lat * Math.PI) / 180;
-  return (1 - Math.log(Math.tan(Math.PI / 4 + phi / 2)) / Math.PI) / 2;
-};
-const toLng = (x: number) => x * 360 - 180;
-const toLat = (y: number) =>
-  (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI;
 
 /**
  * Keeps the center where the viewport's edges can reach [min, max], plus
@@ -76,7 +67,13 @@ export function createLatAmConstrain(
     const viewH = height / worldPx;
 
     const x = clampAxis(toX(lngLat.wrap().lng), minX, maxX, viewW / 2, 0);
-    const y = clampAxis(toY(lngLat.lat), minY, maxY, viewH / 2, viewH * PAN_SLACK_Y);
+    const y = clampAxis(
+      toY(lngLat.lat),
+      minY,
+      maxY,
+      viewH / 2,
+      viewH * PAN_SLACK_Y,
+    );
 
     return { center: new LngLat(toLng(x), toLat(y)), zoom };
   };

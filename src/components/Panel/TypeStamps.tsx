@@ -16,7 +16,7 @@ export function TypeStamps({ types }: TypeStampsProps) {
         <li key={type}>
           <Badge
             variant="outline"
-            className={`h-7 rounded-sm border-2 bg-card px-2.5 font-mono text-xs font-medium tracking-widest uppercase ${TYPE_STAMP_CLASSES[type]} ${STAMP_TILTS[index % STAMP_TILTS.length]}`}
+            className={`h-7 rounded-sm transition-none border-2 bg-card px-2.5 font-mono text-xs font-medium tracking-widest uppercase ${TYPE_STAMP_CLASSES[type]} ${STAMP_TILTS[index % STAMP_TILTS.length]}`}
           >
             {TYPE_LABELS[type]}
           </Badge>

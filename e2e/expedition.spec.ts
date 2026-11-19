@@ -107,7 +107,7 @@ test("a shared link opens the Pokémon; closing drops the param and refocuses it
 
   const panel = page.getByRole("dialog", { name: "Pikachu" });
   await expect(panel).toBeVisible();
-  // The camera revealed Pikachu's location (Amazonía) beside the panel.
+  // The camera revealed Pikachu's location (El Yunque) beside the panel.
   const marker = page.getByRole("button", {
     name: "Pikachu",
     includeHidden: true,
@@ -180,7 +180,7 @@ test("the diary lists destinations by region; picking one flies there and closes
   await expect(intro).toContainText("Elegí un destino");
 
   const openDiary = async () => {
-    await page.getByRole("button", { name: /PokéRadar/ }).click();
+    await page.getByRole("button", { name: /^Guía/ }).click();
     return page.getByRole("dialog", { name: "PokéRadar" });
   };
   let diary = await openDiary();
@@ -230,4 +230,145 @@ test("a grouped stamp zooms in until its destinations separate", async ({
   await expect(
     page.getByRole("button", { name: /^Bahía de Samaná, \d+ Pokémon$/ }),
   ).toBeVisible();
+});
+
+test("opening a card leaves a stamp in the book, one habitat per page", async ({
+  page,
+}) => {
+  const isPhone = (page.viewportSize()?.width ?? 0) < 768;
+  await page.goto("/?pokemon=25");
+  await expect(page.getByRole("dialog", { name: "Pikachu" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  // The count is in the pill's name, so this also checks it went to 1.
+  const trigger = page.getByRole("button", { name: /^Sellos 1\/151/ });
+  const book = page.getByRole("dialog", { name: "Libro de sellos" });
+  await trigger.click();
+
+  // Desktop pages by folder tabs; phones by ink dots (the tabs are hidden).
+  const currentPage = (habitat: string, progress: string) =>
+    isPhone
+      ? expect(
+          book.getByRole("button", { name: `${habitat}, ${progress}` }),
+        ).toHaveAttribute("aria-current", "page")
+      : expect(
+          book.getByRole("tab", { name: new RegExp(`^${habitat}`) }),
+        ).toHaveAttribute("aria-selected", "true");
+
+  // It opens on the page of the new stamp: Bosques, page 2 of 9.
+  await currentPage("Bosques", isPhone ? "1 de 21" : "");
+  const forest = book.getByRole("tabpanel");
+  await expect(
+    forest.getByRole("heading", { name: "Bosques 1/21" }),
+  ).toBeAttached();
+  await expect(
+    forest.getByRole("figure", {
+      name: /^Pikachu, sellado en .+ el \d{4}\.\d{2}\.\d{2}$/,
+    }),
+  ).toBeVisible();
+  await expect(forest.getByText("Sello pendiente en")).toHaveCount(20);
+  if (!isPhone) {
+    // Long habitat names are shortened on the tabs only.
+    await expect(book.getByRole("tab", { name: /^Raros/ })).toBeVisible();
+  }
+
+  // ← / → change the page from anywhere in the book; the first page is the
+  // end of the line.
+  await book.getByRole("tabpanel").focus();
+  await page.keyboard.press("ArrowRight");
+  await currentPage("Praderas", isPhone ? "0 de 35" : "");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("ArrowLeft");
+  await currentPage("Orillas", isPhone ? "0 de 19" : "");
+
+  if (isPhone) {
+    // The arrows by the title page too; there's no page before the first.
+    await expect(
+      book.getByRole("button", { name: "Página anterior" }),
+    ).toBeDisabled();
+    await book.getByRole("button", { name: "Página siguiente" }).click();
+    await currentPage("Bosques", "1 de 21");
+  } else {
+    // Desktop has no arrow buttons: the tabs and the keys turn the pages.
+    await expect(book.getByRole("button", { name: /^Página/ })).toHaveCount(0);
+  }
+
+  if (isPhone) {
+    // A dot jumps to its page, and a left swipe turns to the next one.
+    await book.getByRole("button", { name: "Mar, 0 de 15" }).click();
+    await currentPage("Mar", "0 de 15");
+    const pageBody = book.getByRole("tabpanel");
+    const box = await pageBody.boundingBox();
+    if (!box) throw new Error("page body not laid out");
+    const y = box.y + box.height / 2;
+    await pageBody.dispatchEvent("pointerdown", {
+      pointerType: "touch",
+      clientX: box.x + box.width - 20,
+      clientY: y,
+    });
+    await pageBody.dispatchEvent("pointerup", {
+      pointerType: "touch",
+      clientX: box.x + 20,
+      clientY: y,
+    });
+    await currentPage("Ciudades", "0 de 22");
+  }
+
+  await page.keyboard.press("Escape");
+  await expect(book).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+
+  // Stored in localStorage: still there after a reload.
+  await page.reload();
+  await trigger.click();
+  await expect(
+    isPhone
+      ? book.getByRole("button", { name: "Bosques, 1 de 21" })
+      : book.getByRole("tab", { name: /^Bosques\s*1\/21$/ }),
+  ).toBeVisible();
+});
+
+test("the intro note leaves after a few seconds, or at once on a click", async ({
+  page,
+}) => {
+  const intro = page.getByRole("complementary", { name: "Cómo empezar" });
+
+  // Real time: the note is server-rendered, so a fake clock could jump ahead
+  // before hydration has even started the timer (6 s).
+  await page.goto("/");
+  await expect(intro).toBeVisible();
+  await expect(intro).toHaveCount(0, { timeout: 10_000 });
+
+  // A click anywhere (here, opening and closing the stamp book) dismisses it
+  // straight away, even without moving the map.
+  await page.reload();
+  await expect(intro).toBeVisible();
+  await page.getByRole("button", { name: /^Sellos/ }).click();
+  await page.keyboard.press("Escape");
+  await expect(intro).toHaveCount(0);
+});
+
+test("one click on a header pill closes the open card or book and opens its own", async ({
+  page,
+}) => {
+  await page.goto("/?pokemon=25");
+  await expect(page.getByRole("dialog", { name: "Pikachu" })).toBeVisible();
+
+  // While a modal is open the rest of the page is hidden from assistive
+  // tech, so the pills are found with includeHidden.
+  const pill = (name: RegExp) =>
+    page.getByRole("button", { name, includeHidden: true });
+  await pill(/^Sellos/).click();
+  await expect(
+    page.getByRole("dialog", { name: "Libro de sellos" }),
+  ).toBeVisible();
+  // The card really closed (not just hidden behind the book).
+  await expect(page.locator("[role=dialog][data-state=open]")).toHaveCount(1);
+  expect(pokemonParam(page)).toBeNull();
+
+  await pill(/^Guía/).click();
+  await expect(page.getByRole("dialog", { name: "PokéRadar" })).toBeVisible();
+  await expect(page.locator("[role=dialog][data-state=open]")).toHaveCount(1);
 });

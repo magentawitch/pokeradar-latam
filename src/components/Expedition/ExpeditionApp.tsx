@@ -10,6 +10,8 @@ import { MapFallback } from "@/components/Map/MapFallback";
 import { DetailPanel } from "@/components/Panel/DetailPanel";
 import { useMapNavigation } from "@/hooks/useMapNavigation";
 import { useCameraPadding } from "@/hooks/useCameraPadding";
+import { useRecordDiscovery } from "@/hooks/useDiscoveries";
+import { useIntroDismissal } from "@/hooks/useIntroDismissal";
 import { useSelectedPokemon } from "@/hooks/useSelectedPokemon";
 import type { ViewStateChangeEvent } from "react-map-gl/maplibre";
 import type { BiomeConfig, BiomeRoster, RosterEntry } from "@/lib/biomes/types";
@@ -49,13 +51,18 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
   } = useMapNavigation();
   const { selectedId, selectPokemon, closePokemon } =
     useSelectedPokemon(rosterIds);
+  // Opening a card by any route discovers that Pokémon (its stamp).
+  useRecordDiscovery(selectedId);
   const getCameraPadding = useCameraPadding();
   const [isMapReady, setIsMapReady] = useState(false);
   const handleMapReady = useCallback(() => setIsMapReady(true), []);
-  // The intro note and hint bar show until the user first moves the map or
-  // picks a place, and stay out of the way while a Pokémon's card is open.
+  // The hint bar shows until the user first moves the map or picks a place.
+  // The intro note also leaves after a few seconds or on the first click or
+  // key press anywhere. Both stay out of the way while a card is open.
   const [hasExplored, setHasExplored] = useState(false);
-  const showIntro = !hasExplored && selectedId === null;
+  const isIntroDismissed = useIntroDismissal();
+  const showHint = !hasExplored && selectedId === null;
+  const showIntro = showHint && !isIntroDismissed;
 
   const selectedEntry =
     selectedId === null ? null : (entriesById.get(selectedId) ?? null);
@@ -119,7 +126,7 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
       <AnimatePresence>
         {showIntro && <ExpeditionIntro key="intro" />}
       </AnimatePresence>
-      <HintBar isVisible={showIntro} />
+      <HintBar isVisible={showHint} />
       <DetailPanel entry={selectedEntry} onClose={closePokemon} />
     </>
   );

@@ -14,6 +14,9 @@
  *    number, which passes ≥ 4.5:1 on every fill.
  */
 @theme {
+  /* Stamp book: tabs and centred card from here (its 9 tabs need ~750px). */
+  --breakpoint-book: 50rem;
+
   --color-paper: #f3ebdd; /* page + map water */
   --color-card: #fbf6ec; /* raised journal cards */
   --color-land: #d8c3a0; /* sepia land wash */
@@ -170,6 +173,37 @@
 [data-habitat="rare"] {
   --habitat-ink: var(--color-biome-rare);
   --habitat-fill: var(--color-biome-rare-fill);
+}
+
+/*
+ * Stamp book inks, resolved per element after --habitat-ink:
+ * - stamp: the habitat's ring colour with 30% ink, for the silhouette and
+ *   rings; it clears 3:1 on card for all nine (graphics).
+ * - stamp-text: half ink, for the place and date on the ring, so they pass
+ *   AA as text on card (≥ 4.6:1 for all nine).
+ */
+[data-habitat] {
+  --habitat-stamp: color-mix(
+    in oklab,
+    var(--habitat-ink) 70%,
+    var(--color-ink)
+  );
+  --habitat-stamp-text: color-mix(
+    in oklab,
+    var(--habitat-ink) 50%,
+    var(--color-ink)
+  );
+}
+
+/*
+ * Worn rubber-stamp ink: a fractal-noise alpha mask that knocks small specks
+ * out of whatever it covers (ring and silhouette alike). It's a single mask
+ * layer on a wrapper, so it needs no mask-composite (unreliable on WebKit).
+ */
+@utility stamp-worn {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -16 11.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mask-size: 140px 140px;
+  mask-repeat: repeat;
 }
 
 /* Graph paper: major lines every 5 squares; multiply keeps it under the ink. */

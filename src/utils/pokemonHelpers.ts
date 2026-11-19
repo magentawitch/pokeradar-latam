@@ -24,6 +24,22 @@ export function staticSpriteUrl(id: number) {
   return `${SPRITES_BASE_URL}/${id}.png`;
 }
 
+// Stamp book artwork. These URLs are built from the dex id instead of read from
+// PokéAPI's `sprites.other` because, for Gen 1, they follow a fixed pattern in
+// the sprites repo: building them costs no requests, no Zod schema and no
+// cache layer for 151 Pokémon. If a file is ever missing, the stamp falls back
+// from the dream world SVG to the official artwork, then to its dex number.
+
+/** Dream world vector artwork (an SVG); the stamp's silhouette mask. */
+export function dreamWorldSpriteUrl(id: number) {
+  return `${SPRITES_BASE_URL}/other/dream-world/${id}.svg`;
+}
+
+/** Official artwork (a PNG); the stamp's fallback mask. */
+export function officialArtworkUrl(id: number) {
+  return `${SPRITES_BASE_URL}/other/official-artwork/${id}.png`;
+}
+
 /** "#025": dex number padded to Gen 1's three digits. */
 export function formatDexNumber(id: number) {
   return `#${String(id).padStart(3, "0")}`;

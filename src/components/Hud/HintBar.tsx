@@ -34,7 +34,7 @@ export function HintBar({ isVisible }: HintBarProps) {
           key="hint"
           exit={{ opacity: 0, y: 8 }}
           transition={{ duration: 0.3 }}
-          className="pointer-events-none absolute bottom-2 left-1/2 z-10 w-max max-w-[calc(100%-6rem)] -translate-x-1/2 rounded-full border border-border bg-card/95 px-3 py-1 text-center text-xs text-ink-muted shadow-sm"
+          className="pointer-events-none absolute bottom-14 left-1/2 z-10 w-max max-w-[calc(100%-2rem)] md:bottom-9 -translate-x-1/2 rounded-full border border-border bg-card/95 px-3 py-1 text-center text-xs text-ink-muted shadow-sm"
         >
           <HintCopy />
         </motion.p>

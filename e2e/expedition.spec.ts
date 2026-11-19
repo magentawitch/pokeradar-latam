@@ -170,26 +170,50 @@ test("a failed detail request shows Reintentar, which recovers the page", async 
   await expect(panel.getByRole("alert")).toHaveCount(0);
 });
 
-test("the diary lists the destinations; picking one flies there and closes it", async ({
+test("the diary lists destinations by region; picking one flies there and closes it", async ({
   page,
 }) => {
   await page.goto("/");
   const hint = page.locator("p", { hasText: "Arrastrá para moverte ·" });
+  const intro = page.getByRole("complementary", { name: "Cómo empezar" });
   await expect(hint).toBeVisible();
+  await expect(intro).toContainText("Elegí un destino");
 
-  await page.getByRole("button", { name: /PokéRadar/ }).click();
-  const diary = page.getByRole("dialog", { name: "PokéRadar" });
-  await expect(diary.getByRole("list", { name: "Destinos" })).toBeVisible();
-  await expect(
-    diary.getByRole("heading", { name: "Cómo explorar" }),
-  ).toBeVisible();
+  const openDiary = async () => {
+    await page.getByRole("button", { name: /PokéRadar/ }).click();
+    return page.getByRole("dialog", { name: "PokéRadar" });
+  };
+  let diary = await openDiary();
 
+  // Nothing is on screen yet, so every region starts collapsed.
+  const conoSur = diary.getByRole("button", { name: /^Cono Sur/ });
+  await expect(conoSur).toHaveAttribute("aria-expanded", "false");
+  await expect(diary.getByRole("button", { name: /Iguazú/ })).toHaveCount(0);
+
+  // The second tab holds the controls and the map legend.
+  await diary.getByRole("tab", { name: "Cómo explorar" }).click();
+  await expect(diary.getByRole("heading", { name: "Hábitats" })).toBeVisible();
+  await diary.getByRole("tab", { name: "Destinos" }).click();
+
+  await conoSur.click();
   await diary.getByRole("button", { name: /Iguazú/ }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  // Picking a destination counts as exploring: the hint bar goes away.
+  // Picking a destination counts as exploring: the hint bar and the intro
+  // note go away.
   await expect(hint).toHaveCount(0);
+  await expect(intro).toHaveCount(0);
   // Arrival reveals that location's Pokémon.
   await expect(page.getByRole("button", { name: "Squirtle" })).toBeVisible();
+
+  // Reopened, the diary expands the region on screen and marks the place.
+  diary = await openDiary();
+  await expect(
+    diary.getByRole("button", { name: /^Cono Sur/ }),
+  ).toHaveAttribute("aria-expanded", "true");
+  await expect(diary.getByRole("button", { name: /Iguazú/ })).toHaveAttribute(
+    "aria-current",
+    "location",
+  );
 });
 
 test("a grouped stamp zooms in until its destinations separate", async ({

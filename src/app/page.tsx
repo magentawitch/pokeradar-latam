@@ -14,7 +14,7 @@ export default async function Home() {
         <ExpeditionApp roster={roster} />
       </Suspense>
       <GraphPaperOverlay />
-      <CompassRose className="absolute right-4 bottom-10 size-16 md:top-6 md:right-6 md:bottom-auto md:size-24" />
+      <CompassRose className="absolute right-3 bottom-28 size-14 md:right-6 md:bottom-12 md:size-20" />
     </main>
   );
 }

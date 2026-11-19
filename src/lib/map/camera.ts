@@ -11,7 +11,7 @@ export const INITIAL_BOUNDS: [[number, number], [number, number]] = [
   [-29, 28],
 ];
 
-/** Keeps the opening stamps clear of the HUD: title and compass on top, hint bar below. */
+/** Keeps the opening stamps clear of the HUD: title on top, hint bar and compass below. */
 export const INITIAL_PADDING = { top: 72, bottom: 56, left: 32, right: 32 };
 
 /** Mexico to Tierra del Fuego: the pan limits (only the latitudes are used). */

@@ -23,6 +23,7 @@
   --color-ink-muted: #52493f;
   --color-sticky: #f7e27e;
   --color-rule: #e6dac4; /* hairlines, muted fills */
+  --color-margin: #b4554a; /* index-card header rule; decorative only */
 
   --color-biome-waters-edge: #2f625e;
   --color-biome-forest: #3f5f30;
@@ -33,6 +34,26 @@
   --color-biome-sea: #2f5170;
   --color-biome-urban: #7a3f2c;
   --color-biome-rare: #86334f;
+
+  /* Type stamps: ink colours, each ≥ 4.5:1 as text on card, paper and rule. */
+  --color-type-normal: #5f5a4e;
+  --color-type-fire: #9a3b12;
+  --color-type-water: #2a5683;
+  --color-type-electric: #7a5a00;
+  --color-type-grass: #3b6424;
+  --color-type-ice: #2a6470;
+  --color-type-fighting: #8a2a22;
+  --color-type-poison: #6c3478;
+  --color-type-ground: #7a5421;
+  --color-type-flying: #4a5689;
+  --color-type-psychic: #9a2e57;
+  --color-type-bug: #56611a;
+  --color-type-rock: #6b5a2e;
+  --color-type-ghost: #4e3f70;
+  --color-type-dragon: #3c3a91;
+  --color-type-dark: #3e3631;
+  --color-type-steel: #4f5d68;
+  --color-type-fairy: #94386f;
 }
 
 /* shadcn semantic tokens mapped onto the journal palette. */
@@ -105,6 +126,25 @@
     24px 24px,
     24px 24px;
   mix-blend-mode: multiply;
+}
+
+/* Index-card ruling: faint blue-grey lines, one every 1.75rem. */
+@utility ruled-card {
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(1.75rem - 1px),
+    color-mix(in oklab, #4a6a8a 14%, transparent) calc(1.75rem - 1px)
+  );
+  background-size: 100% 1.75rem;
+}
+
+/* Pen hatching for filled bars. */
+@utility ink-hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-ink-brown) 0 2px,
+    transparent 2px 5px
+  );
 }
 
 @layer base {

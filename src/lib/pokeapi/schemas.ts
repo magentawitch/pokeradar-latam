@@ -30,6 +30,42 @@ export const HabitatResponseSchema = z.object({
 });
 export type HabitatResponse = z.infer<typeof HabitatResponseSchema>;
 
+export const POKEMON_TYPES = [
+  "normal",
+  "fire",
+  "water",
+  "electric",
+  "grass",
+  "ice",
+  "fighting",
+  "poison",
+  "ground",
+  "flying",
+  "psychic",
+  "bug",
+  "rock",
+  "ghost",
+  "dragon",
+  "dark",
+  "steel",
+  "fairy",
+] as const;
+
+export const PokemonTypeSchema = z.enum(POKEMON_TYPES);
+export type PokemonType = z.infer<typeof PokemonTypeSchema>;
+
+export const STAT_NAMES = [
+  "hp",
+  "attack",
+  "defense",
+  "special-attack",
+  "special-defense",
+  "speed",
+] as const;
+
+export const StatNameSchema = z.enum(STAT_NAMES);
+export type StatName = z.infer<typeof StatNameSchema>;
+
 const FrontDefaultSchema = z.object({ front_default: z.string().nullable() });
 
 export const PokemonResponseSchema = z.object({
@@ -37,9 +73,17 @@ export const PokemonResponseSchema = z.object({
   name: z.string(),
   height: z.number(),
   weight: z.number(),
-  types: z.array(z.object({ slot: z.number(), type: NamedResourceSchema })),
+  types: z.array(
+    z.object({
+      slot: z.number(),
+      type: NamedResourceSchema.extend({ name: PokemonTypeSchema }),
+    }),
+  ),
   stats: z.array(
-    z.object({ base_stat: z.number(), stat: NamedResourceSchema }),
+    z.object({
+      base_stat: z.number(),
+      stat: NamedResourceSchema.extend({ name: StatNameSchema }),
+    }),
   ),
   sprites: z.object({
     front_default: z.string().nullable(),

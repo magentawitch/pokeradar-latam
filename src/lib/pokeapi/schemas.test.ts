@@ -127,6 +127,21 @@ describe("PokemonResponseSchema", () => {
     ).toBe(false);
   });
 
+  it("rejects type and stat names the app has no labels for", () => {
+    expect(
+      accepts({
+        ...validPokemon(),
+        types: [{ slot: 1, type: resource("stellar") }],
+      }),
+    ).toBe(false);
+    expect(
+      accepts({
+        ...validPokemon(),
+        stats: [{ base_stat: 35, stat: resource("accuracy") }],
+      }),
+    ).toBe(false);
+  });
+
   it("rejects null", () => {
     expect(accepts(null)).toBe(false);
   });

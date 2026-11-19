@@ -12,7 +12,13 @@ export function Providers({ children }: ProvidersProps) {
     () =>
       new QueryClient({
         defaultOptions: {
-          queries: { staleTime: Infinity, refetchOnWindowFocus: false },
+          queries: {
+            staleTime: Infinity,
+            refetchOnWindowFocus: false,
+            // One quick automatic retry covers a network blip; after that the
+            // panel shows its error and the user retries by hand.
+            retry: 1,
+          },
         },
       }),
   );

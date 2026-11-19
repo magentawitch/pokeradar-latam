@@ -1,0 +1,12 @@
+{
+  "version": 8,
+  "name": "e2e-fixture",
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": { "background-color": "#d8c3a0" }
+    }
+  ]
+}

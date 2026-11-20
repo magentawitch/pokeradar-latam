@@ -1,14 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { Marker } from "react-map-gl/maplibre";
-import {
-  STAMP_PRESS_ANIMATE,
-  STAMP_PRESS_INITIAL,
-  STAMP_PRESS_TRANSITION,
-} from "@/components/StampBook/stampMotion";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -55,9 +49,6 @@ export function PokemonMarker({
 }: PokemonMarkerProps) {
   const reduceMotion = useReducedMotion();
   const [longitude, latitude] = entry.position;
-  // Revealed as a silhouette, a later sprite means it was just discovered
-  // here, so it's stamped in. Revealed already discovered, it just pops in.
-  const [revealedAsSilhouette] = useState(!isDiscovered);
   const name = formatPokemonName(entry.name);
 
   return (
@@ -97,26 +88,15 @@ export function PokemonMarker({
             >
               {/* Sprites carry wide transparent margins, so draw them past the ring. */}
               {isDiscovered ? (
-                <motion.span
-                  className="flex size-[150%] shrink-0"
-                  initial={
-                    revealedAsSilhouette && !reduceMotion
-                      ? STAMP_PRESS_INITIAL
-                      : false
-                  }
-                  animate={STAMP_PRESS_ANIMATE}
-                  transition={STAMP_PRESS_TRANSITION}
-                >
-                  <Image
-                    src={staticSpriteUrl(entry.id)}
-                    alt={name}
-                    width={96}
-                    height={96}
-                    unoptimized
-                    draggable={false}
-                    className="size-full [image-rendering:pixelated]"
-                  />
-                </motion.span>
+                <Image
+                  src={staticSpriteUrl(entry.id)}
+                  alt={name}
+                  width={96}
+                  height={96}
+                  unoptimized
+                  draggable={false}
+                  className="size-[150%] max-w-none [image-rendering:pixelated]"
+                />
               ) : (
                 // The same CSS-mask silhouette as the stamp book, in ink brown.
                 <span

@@ -2,16 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { AnimatePresence } from "motion/react";
+import { useSearchParams } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
 import { ExpeditionJournal } from "@/components/Expedition/ExpeditionJournal";
-import { ExpeditionIntro } from "@/components/Hud/ExpeditionIntro";
 import { HintBar } from "@/components/Hud/HintBar";
+import { ExpeditionIntro } from "@/components/Intro/ExpeditionIntro";
 import { MapFallback } from "@/components/Map/MapFallback";
 import { DetailPanel } from "@/components/Panel/DetailPanel";
 import { useMapNavigation } from "@/hooks/useMapNavigation";
 import { useCameraPadding } from "@/hooks/useCameraPadding";
 import { useRecordDiscovery } from "@/hooks/useDiscoveries";
-import { useIntroDismissal } from "@/hooks/useIntroDismissal";
 import { usePokemonCry } from "@/hooks/usePokemonCry";
 import { useSelectedPokemon } from "@/hooks/useSelectedPokemon";
 import type { ViewStateChangeEvent } from "react-map-gl/maplibre";
@@ -19,6 +19,7 @@ import type { BiomeConfig, BiomeRoster, RosterEntry } from "@/lib/biomes/types";
 import { isDiscovered } from "@/lib/discovery/store";
 import { NO_PADDING } from "@/lib/map/reveal";
 import { cryUrl } from "@/utils/pokemonHelpers";
+import { POKEMON_PARAM } from "@/utils/selectionHelpers";
 
 const ExpeditionMap = dynamic(
   () =>
@@ -70,13 +71,17 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
   const getCameraPadding = useCameraPadding();
   const [isMapReady, setIsMapReady] = useState(false);
   const handleMapReady = useCallback(() => setIsMapReady(true), []);
-  // The hint bar shows until the user first moves the map or picks a place.
-  // The intro note also leaves after a few seconds or on the first click or
-  // key press anywhere. Both stay out of the way while a card is open.
+  // The field-journal intro covers the map on load. A shared ?pokemon= link
+  // skips it, decided once: closing that card later doesn't bring it back.
+  const searchParams = useSearchParams();
+  const [isIntroShown, setIsIntroShown] = useState(
+    () => !searchParams.has(POKEMON_PARAM),
+  );
+  const finishIntro = useCallback(() => setIsIntroShown(false), []);
+  // The hint bar shows after the intro, until the user first moves the map or
+  // picks a place, and stays out of the way while a card is open.
   const [hasExplored, setHasExplored] = useState(false);
-  const isIntroDismissed = useIntroDismissal();
-  const showHint = !hasExplored && selectedId === null;
-  const showIntro = showHint && !isIntroDismissed;
+  const showHint = !isIntroShown && !hasExplored && selectedId === null;
 
   const selectedEntry =
     selectedId === null ? null : (entriesById.get(selectedId) ?? null);
@@ -137,9 +142,21 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
         activeBiomeId={activeBiomeId}
         onBiomeSelect={handleBiomeSelect}
       />
+      {/* Once the intro is gone, the map's loading state shows until the
+          map is ready. It never blocks input. */}
       <AnimatePresence>
-        {showIntro && <ExpeditionIntro key="intro" />}
+        {!isIntroShown && !isMapReady && (
+          <motion.div
+            key="map-loading"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="pointer-events-none absolute inset-0 z-10"
+          >
+            <MapFallback />
+          </motion.div>
+        )}
       </AnimatePresence>
+      {isIntroShown && <ExpeditionIntro onFinish={finishIntro} />}
       <HintBar isVisible={showHint} />
       <DetailPanel entry={selectedEntry} onClose={closePokemon} />
     </>

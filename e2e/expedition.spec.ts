@@ -2,7 +2,7 @@ import path from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { assignToBiomes } from "../src/lib/biomes/assignment";
 import { BIOMES } from "../src/lib/biomes/biomes";
-import { SPECIES_BY_HABITAT } from "../src/lib/biomes/gen1Fixture";
+import { SPECIES_BY_HABITAT } from "../src/test/gen1Fixture";
 import { placeRoster } from "../src/lib/biomes/positions";
 import { revealOrder } from "../src/lib/biomes/revealOrder";
 import { POSITRON_STYLE_URL } from "../src/lib/map/expeditionStyle";
@@ -21,10 +21,6 @@ async function mockNetwork(page: Page) {
       : route.abort(),
   );
   await page.route("https://raw.githubusercontent.com/**", (route) =>
-    route.fulfill({ path: path.join(FIXTURES, "sprite.png") }),
-  );
-  // Explorer ID-card photos (Showdown trainer sprites).
-  await page.route("https://play.pokemonshowdown.com/**", (route) =>
     route.fulfill({ path: path.join(FIXTURES, "sprite.png") }),
   );
   // PokéAPI detail calls get trimmed fixtures; anything else is aborted.

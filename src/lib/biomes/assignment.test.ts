@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { assignToBiomes } from "./assignment";
 import { BIOMES } from "./biomes";
-import { GEN1_IDS_BY_HABITAT, SPECIES_BY_HABITAT } from "./gen1Fixture";
+import { GEN1_IDS_BY_HABITAT, SPECIES_BY_HABITAT } from "@/test/gen1Fixture";
 import type { BiomeId } from "./types";
 
 const EXPECTED_COUNTS: Record<BiomeId, number> = {

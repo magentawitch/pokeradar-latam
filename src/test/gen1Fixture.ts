@@ -1,4 +1,4 @@
-import type { SpeciesByHabitat } from "./assignment";
+import type { SpeciesByHabitat } from "@/lib/biomes/assignment";
 
 // Gen 1 ids per PokéAPI habitat (pokemon-habitat/{name}, ids ≤ 151), checked live.
 export const GEN1_IDS_BY_HABITAT = {

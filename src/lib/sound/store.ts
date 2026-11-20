@@ -2,6 +2,8 @@
 // store over localStorage, like the discoveries store, so nothing reads storage
 // during the server render. Sound starts on: a cry only ever plays from a tap.
 
+import { createStorageStore } from "@/lib/storage/createStorageStore";
+
 const MUTED_KEY = "pokeradar:muted:v1";
 
 /** How loud a cry plays; PokéAPI's cries are mastered loud. */
@@ -12,44 +14,19 @@ export function parseMuted(raw: string | null) {
   return raw === "true";
 }
 
-// When storage is unavailable, the choice still lasts for the session.
-let mutedFallback: string | null = null;
+const mutedStore = createStorageStore(MUTED_KEY, parseMuted);
 
-export function getMutedSnapshot() {
-  try {
-    return parseMuted(window.localStorage.getItem(MUTED_KEY) ?? mutedFallback);
-  } catch {
-    return parseMuted(mutedFallback);
-  }
-}
+export const getMutedSnapshot = mutedStore.getSnapshot;
 
 export const getMutedServerSnapshot = () => false;
 
-const mutedListeners = new Set<() => void>();
-
 /** Notifies on local changes and on changes made in other tabs. */
-export function subscribeToMuted(listener: () => void) {
-  mutedListeners.add(listener);
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key === MUTED_KEY || event.key === null) listener();
-  };
-  window.addEventListener("storage", handleStorage);
-  return () => {
-    mutedListeners.delete(listener);
-    window.removeEventListener("storage", handleStorage);
-  };
-}
+export const subscribeToMuted = mutedStore.subscribe;
 
 export function writeMuted(isMuted: boolean) {
-  mutedFallback = String(isMuted);
-  try {
-    window.localStorage.setItem(MUTED_KEY, mutedFallback);
-  } catch {
-    // Kept in memory only.
-  }
   // Muting silences a cry that is still playing.
   if (isMuted) currentCry?.pause();
-  mutedListeners.forEach((listener) => listener());
+  mutedStore.write(String(isMuted));
 }
 
 // Every PokéAPI cry is Ogg Vorbis, so there is no other format to fall back to.

@@ -3,6 +3,7 @@
 // the discoveries and sound stores: the server snapshot is "unknown", so
 // nothing that depends on storage renders until the client has mounted.
 import { z } from "zod";
+import { createStorageStore } from "@/lib/storage/createStorageStore";
 
 const EXPLORER_KEY = "pokeradar:explorer:v1";
 
@@ -17,7 +18,10 @@ export const AVATARS = [
   { id: "hiker", label: "Montañero" },
 ] as const;
 
-export const AVATAR_IDS = ["backpackerf", "backpacker", "hiker"] as const;
+export type AvatarId = (typeof AVATARS)[number]["id"];
+
+const isAvatarId = (value: unknown): value is AvatarId =>
+  AVATARS.some((avatar) => avatar.id === value);
 
 export const EXPLORER_NAME_MAX_LENGTH = 20;
 
@@ -26,12 +30,11 @@ export const DEFAULT_EXPLORER_NAME = "Explorador/a";
 
 export const ExplorerSchema = z.object({
   name: z.string().trim().min(1).max(EXPLORER_NAME_MAX_LENGTH),
-  avatarId: z.enum(AVATAR_IDS),
+  avatarId: z.custom<AvatarId>(isAvatarId),
   startedAt: z.iso.datetime(),
 });
 
 export type Explorer = z.infer<typeof ExplorerSchema>;
-export type AvatarId = Explorer["avatarId"];
 
 export type ExplorerState =
   | { status: "unknown" }
@@ -60,55 +63,20 @@ export function normalizeExplorerName(name: string) {
   return trimmed === "" ? DEFAULT_EXPLORER_NAME : trimmed;
 }
 
-// When storage is unavailable, the explorer still lasts for the session.
-let memoryFallback: string | null = null;
+// Re-parsed only when the stored string changes, so the snapshot stays
+// referentially stable.
+const explorerStore = createStorageStore(EXPLORER_KEY, (raw): ExplorerState => {
+  const explorer = parseExplorer(raw);
+  return explorer ? { status: "saved", explorer } : NONE;
+});
 
-function readRaw() {
-  try {
-    return window.localStorage.getItem(EXPLORER_KEY) ?? memoryFallback;
-  } catch {
-    return memoryFallback;
-  }
-}
-
-// Snapshots must be referentially stable, so re-parse only when the raw
-// stored string changes.
-let cachedRaw: string | null | undefined;
-let cachedState: ExplorerState = NONE;
-
-export function getExplorerSnapshot(): ExplorerState {
-  const raw = readRaw();
-  if (raw !== cachedRaw) {
-    cachedRaw = raw;
-    const explorer = parseExplorer(raw);
-    cachedState = explorer ? { status: "saved", explorer } : NONE;
-  }
-  return cachedState;
-}
+export const getExplorerSnapshot = explorerStore.getSnapshot;
 
 export const getExplorerServerSnapshot = () => UNKNOWN;
 
-const listeners = new Set<() => void>();
-
 /** Notifies on local changes and on changes made in other tabs. */
-export function subscribeToExplorer(listener: () => void) {
-  listeners.add(listener);
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key === EXPLORER_KEY || event.key === null) listener();
-  };
-  window.addEventListener("storage", handleStorage);
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener("storage", handleStorage);
-  };
-}
+export const subscribeToExplorer = explorerStore.subscribe;
 
 export function writeExplorer(explorer: Explorer) {
-  memoryFallback = JSON.stringify(explorer);
-  try {
-    window.localStorage.setItem(EXPLORER_KEY, memoryFallback);
-  } catch {
-    // Kept in memory only.
-  }
-  listeners.forEach((listener) => listener());
+  explorerStore.write(JSON.stringify(explorer));
 }

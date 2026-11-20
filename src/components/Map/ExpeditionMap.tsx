@@ -8,6 +8,7 @@ import Map, {
   type MapRef,
   type ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
+import { useDiscoveries } from "@/hooks/useDiscoveries";
 import { BIOMES } from "@/lib/biomes/biomes";
 import { revealOrder } from "@/lib/biomes/revealOrder";
 import type { BiomeConfig, BiomeId, BiomeRoster } from "@/lib/biomes/types";
@@ -68,6 +69,7 @@ export function ExpeditionMap({
   onReady,
 }: ExpeditionMapProps) {
   const reduceMotion = useReducedMotion();
+  const discoveries = useDiscoveries();
   const activeBiome = BIOMES.find((biome) => biome.id === activeBiomeId);
 
   // Angular order around the centre. DOM order follows it too, so Tab walks
@@ -172,16 +174,21 @@ export function ExpeditionMap({
       {activeBiome && !reduceMotion && (
         <RevealSweep key={activeBiome.id} biome={activeBiome} />
       )}
-      {revealedPokemon.map(({ entry, delayMs }) => (
-        <PokemonMarker
-          key={entry.id}
-          entry={entry}
-          revealDelayMs={delayMs}
-          isSelected={entry.id === selectedPokemonId}
-          onSelect={onPokemonSelect}
-          onDeselect={onPokemonDeselect}
-        />
-      ))}
+      {activeBiome &&
+        revealedPokemon.map(({ entry, delayMs }, index) => (
+          <PokemonMarker
+            key={entry.id}
+            entry={entry}
+            revealDelayMs={delayMs}
+            isSelected={entry.id === selectedPokemonId}
+            isDiscovered={discoveries.has(entry.id)}
+            place={activeBiome.place}
+            order={index + 1}
+            total={revealedPokemon.length}
+            onSelect={onPokemonSelect}
+            onDeselect={onPokemonDeselect}
+          />
+        ))}
     </Map>
   );
 }

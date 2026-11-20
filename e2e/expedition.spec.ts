@@ -1,5 +1,10 @@
 import path from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { assignToBiomes } from "../src/lib/biomes/assignment";
+import { BIOMES } from "../src/lib/biomes/biomes";
+import { SPECIES_BY_HABITAT } from "../src/lib/biomes/gen1Fixture";
+import { placeRoster } from "../src/lib/biomes/positions";
+import { revealOrder } from "../src/lib/biomes/revealOrder";
 import { POSITRON_STYLE_URL } from "../src/lib/map/expeditionStyle";
 
 const FIXTURES = path.join(__dirname, "fixtures");
@@ -56,6 +61,23 @@ async function isClearOfPanel(marker: Locator, panel: Locator) {
   return !overlaps;
 }
 
+/** The roster the app builds, from the same fixture the unit tests check. */
+const ROSTER = placeRoster(assignToBiomes(SPECIES_BY_HABITAT, BIOMES), BIOMES);
+
+/**
+ * An undiscovered Pokémon's marker name: its location and its place in the
+ * reveal order, never the Pokémon itself.
+ */
+function silhouetteName(pokemonId: number) {
+  const biome = BIOMES.find((candidate) =>
+    ROSTER[candidate.id].some((entry) => entry.id === pokemonId),
+  );
+  if (!biome) throw new Error(`#${pokemonId} isn't on the roster`);
+  const order = revealOrder(ROSTER[biome.id], biome.center);
+  const rank = order.findIndex(({ entry }) => entry.id === pokemonId) + 1;
+  return `Silueta sin identificar en ${biome.place}, ${rank} de ${order.length}`;
+}
+
 const pokemonParam = (page: Page) =>
   new URL(page.url()).searchParams.get("pokemon");
 
@@ -63,15 +85,21 @@ test.beforeEach(async ({ page }) => {
   await mockNetwork(page);
 });
 
-test("select a location and a Pokémon; Back closes the card", async ({
+test("tapping a silhouette discovers the Pokémon; Back closes the card", async ({
   page,
 }) => {
   await page.goto("/");
   await page.getByRole("button", { name: /Iguazú/ }).click();
 
-  await page.getByRole("button", { name: "Squirtle" }).click();
+  // Undiscovered, the marker is a silhouette that doesn't give the name away.
+  await expect(page.getByRole("button", { name: "Squirtle" })).toHaveCount(0);
+  await page.getByRole("button", { name: silhouetteName(7) }).click();
   const panel = page.getByRole("dialog", { name: "Squirtle" });
   await expect(panel).toBeVisible();
+  // The tap stamped it: one stamp in the book.
+  await expect(
+    page.getByRole("button", { name: /^Sellos 1\/151/, includeHidden: true }),
+  ).toBeAttached();
   // The field-note page fills in from PokéAPI.
   await expect(panel.getByRole("list", { name: "Tipos" })).toHaveText("Agua");
   await expect(
@@ -202,8 +230,10 @@ test("the diary lists destinations by region; picking one flies there and closes
   // note go away.
   await expect(hint).toHaveCount(0);
   await expect(intro).toHaveCount(0);
-  // Arrival reveals that location's Pokémon.
-  await expect(page.getByRole("button", { name: "Squirtle" })).toBeVisible();
+  // Arrival reveals that location's Pokémon, as silhouettes.
+  await expect(
+    page.getByRole("button", { name: silhouetteName(7) }),
+  ).toBeVisible();
 
   // Reopened, the diary expands the region on screen and marks the place.
   diary = await openDiary();

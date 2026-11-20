@@ -1,8 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { Marker } from "react-map-gl/maplibre";
+import {
+  STAMP_PRESS_ANIMATE,
+  STAMP_PRESS_INITIAL,
+  STAMP_PRESS_TRANSITION,
+} from "@/components/StampBook/stampMotion";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -24,6 +30,14 @@ interface PokemonMarkerProps {
   /** When the sweep reaches this marker; ignored with reduced motion. */
   revealDelayMs: number;
   isSelected: boolean;
+  /** Undiscovered Pokémon show as a silhouette that never reveals them. */
+  isDiscovered: boolean;
+  /** Its location's name, for the silhouette's accessible name. */
+  place: string;
+  /** 1-based position in the reveal order and the location's total, which
+   *  tell otherwise identical silhouettes apart. */
+  order: number;
+  total: number;
   onSelect: (id: number) => void;
   onDeselect: () => void;
 }
@@ -32,11 +46,19 @@ export function PokemonMarker({
   entry,
   revealDelayMs,
   isSelected,
+  isDiscovered,
+  place,
+  order,
+  total,
   onSelect,
   onDeselect,
 }: PokemonMarkerProps) {
   const reduceMotion = useReducedMotion();
   const [longitude, latitude] = entry.position;
+  // Revealed as a silhouette, a later sprite means it was just discovered
+  // here, so it's stamped in. Revealed already discovered, it just pops in.
+  const [revealedAsSilhouette] = useState(!isDiscovered);
+  const name = formatPokemonName(entry.name);
 
   return (
     <Marker
@@ -65,22 +87,48 @@ export function PokemonMarker({
               size="specimen"
               // A toggle: pressed while its page is open; pressing again closes it.
               aria-pressed={isSelected}
+              aria-label={
+                isDiscovered
+                  ? undefined
+                  : `Silueta sin identificar en ${place}, ${order} de ${total}`
+              }
+              // Opening an undiscovered Pokémon's page discovers it.
               onClick={() => (isSelected ? onDeselect() : onSelect(entry.id))}
             >
               {/* Sprites carry wide transparent margins, so draw them past the ring. */}
-              <Image
-                src={staticSpriteUrl(entry.id)}
-                alt={formatPokemonName(entry.name)}
-                width={96}
-                height={96}
-                unoptimized
-                draggable={false}
-                className="size-[150%] max-w-none [image-rendering:pixelated]"
-              />
+              {isDiscovered ? (
+                <motion.span
+                  className="flex size-[150%] shrink-0"
+                  initial={
+                    revealedAsSilhouette && !reduceMotion
+                      ? STAMP_PRESS_INITIAL
+                      : false
+                  }
+                  animate={STAMP_PRESS_ANIMATE}
+                  transition={STAMP_PRESS_TRANSITION}
+                >
+                  <Image
+                    src={staticSpriteUrl(entry.id)}
+                    alt={name}
+                    width={96}
+                    height={96}
+                    unoptimized
+                    draggable={false}
+                    className="size-full [image-rendering:pixelated]"
+                  />
+                </motion.span>
+              ) : (
+                // The same CSS-mask silhouette as the stamp book, in ink brown.
+                <span
+                  aria-hidden="true"
+                  className="size-[150%] shrink-0 bg-ink-brown mask-contain mask-center mask-no-repeat"
+                  style={{ maskImage: `url("${staticSpriteUrl(entry.id)}")` }}
+                />
+              )}
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top" sideOffset={8}>
-            {formatPokemonName(entry.name)}
+            {isDiscovered ? name : "Sin identificar"}
           </TooltipContent>
         </Tooltip>
       </motion.div>

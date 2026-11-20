@@ -23,6 +23,10 @@
   --color-land-deep: #c9b088; /* parks / landcover tint */
   --color-ink: #2b2a26;
   --color-ink-brown: #5b3e29; /* coastlines, strokes */
+  /* Richer, darker brown ink: the journal cover's handwritten title. */
+  --color-ink-brown-deep: oklch(
+    from var(--color-ink-brown) calc(l - 0.08) calc(c * 1.25) h
+  );
   --color-ink-muted: #52493f;
   --color-sticky: #f7e27e;
   --color-rule: #e6dac4; /* hairlines, muted fills */
@@ -56,6 +60,20 @@
   /* Hanko vermilion: the stamp-book pill's new-stamps badge; card-coloured
      text on it is 6:1. */
   --color-hanko: #a33a2c;
+  /* Deep vermilion: the wax seal's pressed-in compass, rim and shadow. The
+     hanko itself made darker and a touch more saturated, keeping its hue, so
+     it stays a warm red instead of turning brown (as mixing in ink did). */
+  --color-hanko-deep: oklch(
+    from var(--color-hanko) calc(l * 0.74) calc(c * 1.1) h
+  );
+
+  /* Field-journal cover: dusty-blue book cloth with a darker spine, a soft
+     blue ink for writing on it (≥ 4.5:1 on the cloth), and a purple elastic.
+     Derived shades keep the cloth's hue. */
+  --color-cover: #a9c4d3;
+  --color-cover-spine: oklch(from var(--color-cover) calc(l - 0.06) c h);
+  --color-cover-ink: oklch(from var(--color-cover) 0.4 0.06 h);
+  --color-elastic: #7a619d;
 
   /* Gold foil for a completed page's stamp, its tab and its pager dot:
      dark → highlight → mid → dark, as gradient stops. Too pale for text, so
@@ -299,6 +317,39 @@
     color-mix(in oklab, #4a6a8a 14%, transparent) calc(1.75rem - 1px)
   );
   background-size: 100% 1.75rem;
+}
+
+/*
+ * Journal cover: matte dusty-blue book cloth. A faint woven grain (two
+ * stretched noise layers, one per thread direction), lighter scuffs worn into
+ * the corners, a thin soft outline, and an asymmetric shadow cast down-right
+ * as if lying on the desk. No sheen: cloth isn't glossy.
+ */
+@utility book-cloth {
+  --scuff: color-mix(in oklab, var(--color-card) 38%, transparent);
+  background-color: var(--color-cover);
+  background-image:
+    radial-gradient(circle at 100% 0%, var(--scuff), transparent 3.5rem),
+    radial-gradient(circle at 100% 100%, var(--scuff), transparent 4rem),
+    radial-gradient(circle at 0% 100%, var(--scuff), transparent 3rem),
+    radial-gradient(circle at 0% 0%, var(--scuff), transparent 2.5rem),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9 0.06' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.28 -0.1'/%3E%3C/filter%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.06 0.9' numOctaves='2' seed='8'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.15 0 0 0 0 0.2 0 0 0 0.24 -0.09'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23h)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23v)'/%3E%3C/svg%3E");
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-cover-ink) 45%, transparent),
+    10px 16px 26px -12px rgb(43 42 38 / 0.42),
+    3px 4px 6px -3px rgb(43 42 38 / 0.3);
+}
+
+/* Journal paper: the app's paper with a faint fibre grain and aged edges. */
+@utility paper-grain {
+  background-color: var(--color-card);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.24 0 0 0 0 0.16 0 0 0 0.35 -0.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(
+      ellipse at center,
+      transparent 55%,
+      color-mix(in oklab, var(--color-land) 45%, transparent)
+    );
 }
 
 /* Pen hatching for filled bars. */

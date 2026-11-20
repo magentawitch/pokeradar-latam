@@ -23,6 +23,10 @@ async function mockNetwork(page: Page) {
   await page.route("https://raw.githubusercontent.com/**", (route) =>
     route.fulfill({ path: path.join(FIXTURES, "sprite.png") }),
   );
+  // Explorer ID-card photos (Showdown trainer sprites).
+  await page.route("https://play.pokemonshowdown.com/**", (route) =>
+    route.fulfill({ path: path.join(FIXTURES, "sprite.png") }),
+  );
   // PokéAPI detail calls get trimmed fixtures; anything else is aborted.
   await page.route("https://pokeapi.co/**", (route) => {
     const match = /\/api\/v2\/(pokemon|pokemon-species)\/(\d+)$/.exec(
@@ -84,6 +88,39 @@ const pokemonParam = (page: Page) =>
 test.beforeEach(async ({ page }) => {
   await mockNetwork(page);
 });
+
+const EXPLORER_KEY = "pokeradar:explorer:v1";
+
+/**
+ * By default every test is a returning explorer: with reduced motion the
+ * field-journal intro skips straight to the map. The intro tests below start
+ * from empty storage instead.
+ */
+test.use({
+  storageState: async ({ baseURL }, provide) => {
+    await provide({
+      cookies: [],
+      origins: [
+        {
+          origin: baseURL ?? "",
+          localStorage: [
+            {
+              name: EXPLORER_KEY,
+              value: JSON.stringify({
+                name: "Ash",
+                avatarId: "hiker",
+                startedAt: "2026-11-01T12:00:00.000Z",
+              }),
+            },
+          ],
+        },
+      ],
+    });
+  },
+});
+
+const storedExplorer = (page: Page) =>
+  page.evaluate((key) => window.localStorage.getItem(key), EXPLORER_KEY);
 
 test("tapping a silhouette discovers the Pokémon; Back closes the card", async ({
   page,
@@ -203,9 +240,7 @@ test("the diary lists destinations by region; picking one flies there and closes
 }) => {
   await page.goto("/");
   const hint = page.locator("p", { hasText: "Arrastrá para moverte ·" });
-  const intro = page.getByRole("complementary", { name: "Cómo empezar" });
   await expect(hint).toBeVisible();
-  await expect(intro).toContainText("Elegí un destino");
 
   const openDiary = async () => {
     await page.getByRole("button", { name: /^Guía/ }).click();
@@ -226,10 +261,8 @@ test("the diary lists destinations by region; picking one flies there and closes
   await conoSur.click();
   await diary.getByRole("button", { name: /Iguazú/ }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  // Picking a destination counts as exploring: the hint bar and the intro
-  // note go away.
+  // Picking a destination counts as exploring: the hint bar goes away.
   await expect(hint).toHaveCount(0);
-  await expect(intro).toHaveCount(0);
   // Arrival reveals that location's Pokémon, as silhouettes.
   await expect(
     page.getByRole("button", { name: silhouetteName(7) }),
@@ -371,24 +404,117 @@ test("opening a card leaves a stamp in the book, one habitat per page", async ({
   ).toBeVisible();
 });
 
-test("the intro note leaves after a few seconds, or at once on a click", async ({
-  page,
-}) => {
-  const intro = page.getByRole("complementary", { name: "Cómo empezar" });
+test.describe("field-journal intro, first visit", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
 
-  // Real time: the note is server-rendered, so a fake clock could jump ahead
-  // before hydration has even started the timer (6 s).
-  await page.goto("/");
-  await expect(intro).toBeVisible();
-  await expect(intro).toHaveCount(0, { timeout: 10_000 });
+  const journal = (page: Page) =>
+    page.getByRole("dialog", { name: "Diario de expedición" });
 
-  // A click anywhere (here, opening and closing the stamp book) dismisses it
-  // straight away, even without moving the map.
-  await page.reload();
-  await expect(intro).toBeVisible();
-  await page.getByRole("button", { name: /^Sellos/ }).click();
-  await page.keyboard.press("Escape");
-  await expect(intro).toHaveCount(0);
+  test("opening the cover and stamping the ID card saves the explorer and shows the map", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const intro = journal(page);
+    const cover = intro.getByRole("button", {
+      name: "Abrir el diario de expedición",
+    });
+    const nameInput = intro.getByLabel("Nombre del explorador/a");
+    // The dialog itself takes focus on open (no ring around the closed
+    // book). Tab reaches "Saltar intro", then the cover; the card under it is
+    // out of keyboard reach.
+    await expect(intro).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(
+      intro.getByRole("button", { name: "Saltar intro" }),
+    ).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(cover).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(nameInput).not.toBeFocused();
+    await cover.focus();
+    await page.keyboard.press("Enter");
+
+    await expect(nameInput).toBeFocused();
+    // The first photo comes preselected; arrow keys pick another.
+    const firstPhoto = intro.getByRole("radio", { name: "Mochilera" });
+    await expect(firstPhoto).toBeChecked();
+    await nameInput.fill("Misty");
+    await firstPhoto.focus();
+    // Radix selects on arrow focus only while the key is held (it moves focus
+    // in a timeout), so hold it like a person would instead of press().
+    await page.keyboard.down("ArrowRight");
+    await expect(intro.getByRole("radio", { name: "Mochilero" })).toBeFocused();
+    await page.keyboard.up("ArrowRight");
+    await expect(intro.getByRole("radio", { name: "Mochilero" })).toBeChecked();
+    await intro.getByRole("button", { name: "Comenzar expedición" }).click();
+
+    await expect(intro.getByRole("status")).toContainText(
+      "Expedición autorizada",
+    );
+    await expect(journal(page)).toHaveCount(0);
+    await expect(
+      page.locator("p", { hasText: "Arrastrá para moverte ·" }),
+    ).toBeVisible();
+    expect(JSON.parse((await storedExplorer(page)) ?? "null")).toMatchObject({
+      name: "Misty",
+      avatarId: "backpacker",
+    });
+
+    // Returning (reduced motion): straight to the map, no journal.
+    await page.reload();
+    await expect(page.getByRole("button", { name: /^Guía/ })).toBeVisible();
+    await expect(journal(page)).toHaveCount(0);
+  });
+
+  test("a blank name stamps the card as Explorador/a", async ({ page }) => {
+    await page.goto("/");
+    const intro = journal(page);
+    await intro
+      .getByRole("button", { name: "Abrir el diario de expedición" })
+      .click();
+    await intro.getByRole("button", { name: "Comenzar expedición" }).click();
+    await expect(journal(page)).toHaveCount(0);
+    expect(JSON.parse((await storedExplorer(page)) ?? "null")).toMatchObject({
+      name: "Explorador/a",
+      avatarId: "backpackerf",
+    });
+  });
+
+  test("Saltar intro and Esc go straight to the map without saving", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await journal(page).getByRole("button", { name: "Saltar intro" }).click();
+    await expect(journal(page)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Guía/ })).toBeVisible();
+    expect(await storedExplorer(page)).toBeNull();
+
+    // Nothing was saved, so the journal is back on the next visit; Esc skips
+    // it too, even from the open ID card.
+    await page.reload();
+    await journal(page)
+      .getByRole("button", { name: "Abrir el diario de expedición" })
+      .click();
+    await expect(
+      journal(page).getByLabel("Nombre del explorador/a"),
+    ).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(journal(page)).toHaveCount(0);
+    expect(await storedExplorer(page)).toBeNull();
+  });
+
+  test("a shared ?pokemon= link skips the intro and opens the card", async ({
+    page,
+  }) => {
+    await page.goto("/?pokemon=25");
+    await expect(page.getByRole("dialog", { name: "Pikachu" })).toBeVisible();
+    await expect(journal(page)).toHaveCount(0);
+
+    // Closing the card drops the param; the intro doesn't come back.
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(journal(page)).toHaveCount(0);
+  });
 });
 
 test("one click on a header pill closes the open card or book and opens its own", async ({

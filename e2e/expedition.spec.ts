@@ -250,7 +250,10 @@ test("a grouped stamp zooms in until its destinations separate", async ({
   page,
 }) => {
   await page.goto("/");
-  const yunque = page.getByRole("button", { name: /^El Yunque, \d+ Pokémon$/ });
+  // Nothing is discovered yet, so each stamp's progress reads 0.
+  const yunque = page.getByRole("button", {
+    name: /^El Yunque, (\d+) Pokémon, 0 de \1 descubiertos$/,
+  });
   // At the opening zoom El Yunque and Samaná overlap, so they share one stamp.
   await expect(yunque).toHaveCount(0);
   await page
@@ -258,7 +261,9 @@ test("a grouped stamp zooms in until its destinations separate", async ({
     .click();
   await expect(yunque).toBeVisible();
   await expect(
-    page.getByRole("button", { name: /^Bahía de Samaná, \d+ Pokémon$/ }),
+    page.getByRole("button", {
+      name: /^Bahía de Samaná, (\d+) Pokémon, 0 de \1 descubiertos$/,
+    }),
   ).toBeVisible();
 });
 

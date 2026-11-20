@@ -112,6 +112,9 @@ export function StampBook({ roster }: StampBookProps) {
   const [stampDelays, setStampDelays] = useState<ReadonlyMap<number, number>>(
     () => new Map(),
   );
+  const [sealDelays, setSealDelays] = useState<
+    ReadonlyMap<HabitatName, number>
+  >(() => new Map());
   const pageScrollRef = useRef<HTMLDivElement>(null);
   // The pill sits above the overlay (its top-right container is z-60) and
   // stays clickable while any dialog is open, so one click switches from the
@@ -144,6 +147,7 @@ export function StampBook({ roster }: StampBookProps) {
     const plan = planStamping(sections, freshIds);
     const unseen = freshCountsByHabitat(sections, freshIds);
     setStampDelays(plan.delays);
+    setSealDelays(plan.sealDelays);
     if (plan.firstPageIndex !== null) {
       setPageIndex(plan.firstPageIndex);
       const firstHabitat = sections[plan.firstPageIndex]?.habitat;
@@ -158,6 +162,14 @@ export function StampBook({ roster }: StampBookProps) {
     setStampDelays((current) => {
       const next = new Map(current);
       next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const handleSealed = useCallback((habitat: HabitatName) => {
+    setSealDelays((current) => {
+      const next = new Map(current);
+      next.delete(habitat);
       return next;
     });
   }, []);
@@ -282,20 +294,23 @@ export function StampBook({ roster }: StampBookProps) {
             variant="divider"
             loop={false}
             aria-label="Hábitats"
-            className="hidden pl-4 book:inline-flex"
+            className="hidden w-full px-4 book:flex"
           >
             {sections.map((section) => {
               const newCount = unseenHabitats.get(section.habitat) ?? 0;
+              const isComplete = section.completedAt !== null;
               return (
                 <TabsTrigger
                   key={section.habitat}
                   value={section.habitat}
                   data-habitat={section.habitat}
-                  className="flex-col items-center gap-0 before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:rounded-t-md before:bg-(--habitat-ink) group-data-[variant=divider]/tabs-list:px-2.5 group-data-[variant=divider]/tabs-list:tracking-wider"
+                  data-complete={isComplete || undefined}
+                  className="flex-col items-center gap-0 before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:rounded-t-md before:bg-(--habitat-ink) data-complete:before:bg-linear-to-r data-complete:before:from-gold-dark data-complete:before:via-gold-light data-complete:before:to-gold-mid group-data-[variant=divider]/tabs-list:flex-auto group-data-[variant=divider]/tabs-list:px-2.5 group-data-[variant=divider]/tabs-list:tracking-wider"
                 >
                   <span>{section.tabLabel}</span>
                   <span className="text-[0.65rem] tracking-normal">
                     {section.collected}/{section.total}
+                    {isComplete && <span className="sr-only"> · completa</span>}
                   </span>
                   {newCount > 0 && (
                     <>
@@ -327,6 +342,8 @@ export function StampBook({ roster }: StampBookProps) {
                   section={section}
                   stampDelays={stampDelays}
                   onStamped={handleStamped}
+                  sealDelay={sealDelays.get(section.habitat) ?? null}
+                  onSealed={handleSealed}
                 />
               </TabsContent>
             ))}

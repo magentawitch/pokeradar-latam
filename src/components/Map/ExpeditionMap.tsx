@@ -12,6 +12,7 @@ import { useDiscoveries } from "@/hooks/useDiscoveries";
 import { BIOMES } from "@/lib/biomes/biomes";
 import { revealOrder } from "@/lib/biomes/revealOrder";
 import type { BiomeConfig, BiomeId, BiomeRoster } from "@/lib/biomes/types";
+import { discoveredCount } from "@/lib/discovery/derive";
 import {
   createLatAmConstrain,
   INITIAL_BOUNDS,
@@ -155,6 +156,10 @@ export function ExpeditionMap({
               key={stamp.key}
               biome={onlyBiome}
               pokemonCount={roster[onlyBiome.id].length}
+              discoveredCount={discoveredCount(
+                roster[onlyBiome.id],
+                discoveries,
+              )}
               onSelect={onBiomeSelect}
             />
           );
@@ -165,6 +170,11 @@ export function ExpeditionMap({
             cluster={stamp}
             pokemonCount={stamp.members.reduce(
               (sum, biome) => sum + roster[biome.id].length,
+              0,
+            )}
+            discoveredCount={stamp.members.reduce(
+              (sum, biome) =>
+                sum + discoveredCount(roster[biome.id], discoveries),
               0,
             )}
             onSelect={onClusterSelect}

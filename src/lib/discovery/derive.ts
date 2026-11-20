@@ -41,8 +41,18 @@ export type StampSection = {
   tabLabel: string;
   collected: number;
   total: number;
+  /** ISO date of the stamp that filled the page; null until it's full. */
+  completedAt: string | null;
   stamps: StampSlot[];
 };
+
+/** How many of these Pokémon are discovered: a destination's progress. */
+export function discoveredCount(
+  entries: readonly { id: number }[],
+  discoveries: Discoveries,
+) {
+  return entries.filter((entry) => discoveries.has(entry.id)).length;
+}
 
 /** Tab names: the habitat label, shortened where it's too long for a tab. */
 const TAB_LABELS: Record<HabitatName, string> = {
@@ -76,12 +86,19 @@ export function stampSections(
           BIOMES_BY_ID.get(entry.biomeId)?.place ?? HABITAT_LABELS[habitat],
         discoveredAt: discoveries.get(entry.id) ?? null,
       }));
+    const dates = stamps.flatMap((stamp) => stamp.discoveredAt ?? []);
+    const isComplete = stamps.length > 0 && dates.length === stamps.length;
     return {
       habitat,
       label: HABITAT_LABELS[habitat],
       tabLabel: TAB_LABELS[habitat],
-      collected: stamps.filter((stamp) => stamp.discoveredAt !== null).length,
+      collected: dates.length,
       total: stamps.length,
+      completedAt: isComplete
+        ? dates.reduce((latest, date) =>
+            Date.parse(date) > Date.parse(latest) ? date : latest,
+          )
+        : null,
       stamps,
     };
   });
@@ -136,10 +153,17 @@ export function stampHabitat(
 const FIRST_STAMP_DELAY_S = 0.2;
 const STAMP_STAGGER_S = 0.12;
 const MAX_STAMP_DELAY_S = 1.4;
+/** The commemorative seal waits for the page's last stamp to settle. */
+const SEAL_AFTER_LAST_STAMP_S = 0.5;
 
 export type StampingPlan = {
   /** Fresh stamp id → seconds before it's pressed in, staggered per page. */
   delays: ReadonlyMap<number, number>;
+  /**
+   * Habitat → seconds before its commemorative seal is pressed in, for pages
+   * completed since the book was last opened.
+   */
+  sealDelays: ReadonlyMap<HabitatName, number>;
   /** The first page with a fresh stamp, where the book opens; null if none. */
   firstPageIndex: number | null;
 };
@@ -150,19 +174,24 @@ export function planStamping(
   freshIds: ReadonlySet<number>,
 ): StampingPlan {
   const delays = new Map<number, number>();
+  const sealDelays = new Map<HabitatName, number>();
   let firstPageIndex: number | null = null;
   sections.forEach((section, pageIndex) => {
     const fresh = section.stamps.filter((stamp) => freshIds.has(stamp.id));
-    if (fresh.length > 0 && firstPageIndex === null) firstPageIndex = pageIndex;
+    if (fresh.length === 0) return;
+    firstPageIndex ??= pageIndex;
+    let lastDelay = 0;
     fresh.forEach((stamp, order) => {
-      delays.set(
-        stamp.id,
-        Math.min(
-          FIRST_STAMP_DELAY_S + order * STAMP_STAGGER_S,
-          MAX_STAMP_DELAY_S,
-        ),
+      lastDelay = Math.min(
+        FIRST_STAMP_DELAY_S + order * STAMP_STAGGER_S,
+        MAX_STAMP_DELAY_S,
       );
+      delays.set(stamp.id, lastDelay);
     });
+    // A full page with a fresh stamp was completed by that stamp.
+    if (section.completedAt !== null) {
+      sealDelays.set(section.habitat, lastDelay + SEAL_AFTER_LAST_STAMP_S);
+    }
   });
-  return { delays, firstPageIndex };
+  return { delays, sealDelays, firstPageIndex };
 }

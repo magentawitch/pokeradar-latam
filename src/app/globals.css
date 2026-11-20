@@ -57,6 +57,26 @@
      text on it is 6:1. */
   --color-hanko: #a33a2c;
 
+  /* Gold foil for a completed page's stamp, its tab and its pager dot:
+     dark → highlight → mid → dark, as gradient stops. Too pale for text, so
+     the stamp's lettering uses gold-text (6.8:1 on card). */
+  --color-gold-dark: #8f6a2a;
+  --color-gold-light: #d9b45a;
+  --color-gold-mid: #a8823a;
+  --color-gold-text: #6f5118;
+
+  /* One diagonal light sweep across the gold stamp, in its SVG user units. */
+  --animate-gold-shine: gold-shine 0.8s ease-in-out;
+
+  @keyframes gold-shine {
+    from {
+      transform: translateX(-90px);
+    }
+    to {
+      transform: translateX(90px);
+    }
+  }
+
   /* Stamp-book pill feedback on a new discovery: the icon thumps down like a
      rubber stamp, the count pops in the habitat's ink, and the hanko badge
      is pressed on (its tilt lives in `rotate`, apart from these transforms). */

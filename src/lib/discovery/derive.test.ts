@@ -4,6 +4,7 @@ import { BIOMES } from "@/lib/biomes/biomes";
 import { SPECIES_BY_HABITAT } from "@/lib/biomes/gen1Fixture";
 import { placeRoster } from "@/lib/biomes/positions";
 import {
+  discoveredCount,
   formatStampDate,
   freshCountsByHabitat,
   freshStampIds,
@@ -148,6 +149,58 @@ describe("planStamping", () => {
 
   it("has no page to open on without fresh stamps", () => {
     expect(planStamping(sections, new Set()).firstPageIndex).toBeNull();
+  });
+});
+
+const RARE_IDS = [144, 145, 146, 150, 151];
+const rareSection = (discoveries: Map<number, string>) =>
+  stampSections(roster, discoveries).find(
+    (section) => section.habitat === "rare",
+  );
+
+describe("completed pages", () => {
+  const fullRare = new Map(
+    RARE_IDS.map((id, day) => [id, `2026-11-1${day}T10:00:00.000Z`]),
+  );
+
+  it("dates a full page by its last stamp, however they're ordered", () => {
+    expect(rareSection(fullRare)?.completedAt).toBe("2026-11-14T10:00:00.000Z");
+  });
+
+  it("leaves a page one stamp short incomplete", () => {
+    const missingMew = new Map(fullRare);
+    missingMew.delete(151);
+    expect(rareSection(missingMew)?.completedAt).toBeNull();
+  });
+
+  it("presses the seal of a page the fresh stamps completed, after its last stamp", () => {
+    const sections = stampSections(roster, fullRare);
+    const plan = planStamping(sections, new Set([150, 151]));
+    expect(plan.delays.get(151)).toBeCloseTo(0.32);
+    expect(plan.sealDelays.get("rare")).toBeCloseTo(0.82);
+    expect(plan.sealDelays.size).toBe(1);
+  });
+
+  it("doesn't press it again once the page's stamps are no longer fresh", () => {
+    const sections = stampSections(roster, fullRare);
+    expect(planStamping(sections, new Set([25])).sealDelays.has("rare")).toBe(
+      false,
+    );
+  });
+});
+
+describe("discoveredCount", () => {
+  it("counts only the given Pokémon that are discovered", () => {
+    const discoveries = new Map([
+      [144, "2026-11-19T10:00:00.000Z"],
+      [25, "2026-11-19T10:00:00.000Z"],
+    ]);
+    expect(
+      discoveredCount(
+        RARE_IDS.map((id) => ({ id })),
+        discoveries,
+      ),
+    ).toBe(1);
   });
 });
 

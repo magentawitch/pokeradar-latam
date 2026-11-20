@@ -26,7 +26,7 @@ Quise que explorar se sintiera como una expedición y no como un dashboard. La i
 | Librería                                        | Para qué                                                               |
 | ----------------------------------------------- | ---------------------------------------------------------------------- |
 | **Next.js 16** (App Router, Cache Components)   | Shell en el servidor, roster cacheado, metadata e imagen OG            |
-| **React 19** + **TypeScript** estricto          |                    |
+| **React 19** + **TypeScript** estricto          |                                                                        |
 | **Tailwind CSS v4** + **shadcn/ui**             | Tokens del diario en `@theme`; componentes de shadcn reestilizados     |
 | **MapLibre GL** (`react-map-gl`)                | Mapa vectorial sobre OpenFreeMap, recoloreado                          |
 | **TanStack Query**                              | Pedidos de la ficha con caché, reintento y estados de carga y error    |

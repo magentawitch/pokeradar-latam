@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
-import { BIOMES } from "@/lib/biomes/biomes";
+import { BIOMES, getBiome } from "@/lib/biomes/biomes";
 import type { BiomeConfig, BiomeId, RosterEntry } from "@/lib/biomes/types";
 import { clusterCamera } from "@/lib/map/clusters";
 import {
@@ -119,9 +119,7 @@ export function useMapNavigation() {
       if (!map) return;
 
       if (activeBiomeIdRef.current !== entry.biomeId) {
-        const biome = BIOMES.find(
-          (candidate) => candidate.id === entry.biomeId,
-        );
+        const biome = getBiome(entry.biomeId);
         if (biome) flyToBiome(biome, padding);
         return;
       }

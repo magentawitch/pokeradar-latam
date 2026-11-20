@@ -8,7 +8,7 @@
 /*
  * Expedition Journal palette (light-first).
  * Contrast (WCAG AA, checked):
- *  - ink / ink-brown / ink-muted pass ≥ 4.5:1 on paper, card, land and sticky.
+ *  - ink / ink-brown / ink-muted pass ≥ 4.5:1 on paper, card and land.
  *  - biome inks and fills are decorative: never text, never the only cue (the
  *    habitat is always named in text). Stamps stay identifiable by their dark
  *    number, which passes ≥ 4.5:1 on every fill.
@@ -28,7 +28,6 @@
     from var(--color-ink-brown) calc(l - 0.08) calc(c * 1.25) h
   );
   --color-ink-muted: #52493f;
-  --color-sticky: #f7e27e;
   --color-rule: #e6dac4; /* hairlines, muted fills */
   --color-margin: #b4554a; /* index-card header rule; decorative only */
 

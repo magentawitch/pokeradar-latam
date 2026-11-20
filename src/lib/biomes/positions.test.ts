@@ -3,7 +3,7 @@ import { kmOffset, pixelOffset } from "@/lib/map/mercator";
 import { revealZoomFor } from "@/lib/map/reveal";
 import { assignToBiomes, createEmptyRoster } from "./assignment";
 import { BIOMES } from "./biomes";
-import { SPECIES_BY_HABITAT } from "./gen1Fixture";
+import { SPECIES_BY_HABITAT } from "@/test/gen1Fixture";
 import { mulberry32, placeRoster, scatterPositions } from "./positions";
 import type { AssignedEntry, BiomeId, LngLat } from "./types";
 

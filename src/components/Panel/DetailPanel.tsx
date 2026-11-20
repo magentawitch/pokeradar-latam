@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PokemonCard } from "@/components/Panel/PokemonCard";
-import { BIOMES } from "@/lib/biomes/biomes";
+import { getBiome } from "@/lib/biomes/biomes";
 import type { RosterEntry } from "@/lib/biomes/types";
 import {
   formatDexNumber,
@@ -39,9 +39,7 @@ export function DetailPanel({ entry, onClose }: DetailPanelProps) {
   const [shownEntry, setShownEntry] = useState(entry);
   if (entry !== null && entry !== shownEntry) setShownEntry(entry);
 
-  const biome = shownEntry
-    ? BIOMES.find((candidate) => candidate.id === shownEntry.biomeId)
-    : undefined;
+  const biome = getBiome(shownEntry?.biomeId ?? null);
 
   return (
     <Dialog
@@ -60,7 +58,9 @@ export function DetailPanel({ entry, onClose }: DetailPanelProps) {
         // still reaches the tabs and Cerrar next.
         onOpenAutoFocus={(event) => {
           event.preventDefault();
-          (event.currentTarget as HTMLElement).focus();
+          if (event.currentTarget instanceof HTMLElement) {
+            event.currentTarget.focus();
+          }
         }}
         // Return focus to the marker of the Pokémon on the card. Skipped if
         // the marker is gone (another location revealed); Radix's default

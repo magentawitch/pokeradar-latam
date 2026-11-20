@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { BIOMES, HABITAT_LABELS } from "@/lib/biomes/biomes";
+import { BIOMES, getBiome, HABITAT_LABELS } from "@/lib/biomes/biomes";
 import { groupBiomesByRegion } from "@/lib/biomes/regions";
 import type { BiomeConfig, BiomeId, BiomeRoster } from "@/lib/biomes/types";
 
@@ -28,9 +28,7 @@ export function BiomeIndex({
   activeBiomeId,
   onSelect,
 }: BiomeIndexProps) {
-  const activeRegion = BIOMES.find(
-    (biome) => biome.id === activeBiomeId,
-  )?.region;
+  const activeRegion = getBiome(activeBiomeId)?.region;
 
   return (
     <Accordion

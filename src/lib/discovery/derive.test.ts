@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { assignToBiomes } from "@/lib/biomes/assignment";
 import { BIOMES } from "@/lib/biomes/biomes";
-import { SPECIES_BY_HABITAT } from "@/lib/biomes/gen1Fixture";
+import { SPECIES_BY_HABITAT } from "@/test/gen1Fixture";
 import { placeRoster } from "@/lib/biomes/positions";
 import {
   discoveredCount,

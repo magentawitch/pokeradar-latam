@@ -5,7 +5,11 @@ import { PokemonFicha } from "@/components/Panel/PokemonFicha";
 import { PokemonStats } from "@/components/Panel/PokemonStats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type CardTab = "ficha" | "estadisticas";
+const CARD_TABS = ["ficha", "estadisticas"] as const;
+type CardTab = (typeof CARD_TABS)[number];
+
+const isCardTab = (value: string): value is CardTab =>
+  CARD_TABS.some((tab) => tab === value);
 
 interface PokemonCardProps {
   id: number;
@@ -39,7 +43,9 @@ export function PokemonCard({ id, header }: PokemonCardProps) {
   return (
     <Tabs
       value={tab}
-      onValueChange={(value) => setTab(value as CardTab)}
+      onValueChange={(value) => {
+        if (isCardTab(value)) setTab(value);
+      }}
       className="min-h-0 flex-1 gap-0"
     >
       <TabsList

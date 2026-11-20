@@ -77,7 +77,15 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
   const [isIntroShown, setIsIntroShown] = useState(
     () => !searchParams.has(POKEMON_PARAM),
   );
-  const finishIntro = useCallback(() => setIsIntroShown(false), []);
+  // MapLibre's WebGL setup blocks the main thread for a moment, and the
+  // intro hides the map anyway, so the map mounts only once the explorer gets
+  // past the closed cover. Until then the cover paints and responds unhindered.
+  const [canStartMap, setCanStartMap] = useState(() => !isIntroShown);
+  const startMap = useCallback(() => setCanStartMap(true), []);
+  const finishIntro = useCallback(() => {
+    setCanStartMap(true);
+    setIsIntroShown(false);
+  }, []);
   // The hint bar shows after the intro, until the user first moves the map or
   // picks a place, and stays out of the way while a card is open.
   const [hasExplored, setHasExplored] = useState(false);
@@ -125,18 +133,20 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
 
   return (
     <>
-      <ExpeditionMap
-        roster={roster}
-        mapRef={mapRef}
-        activeBiomeId={activeBiomeId}
-        onBiomeSelect={handleBiomeSelect}
-        onClusterSelect={handleClusterSelect}
-        onMoveEnd={handleMoveEnd}
-        selectedPokemonId={selectedId}
-        onPokemonSelect={handlePokemonSelect}
-        onPokemonDeselect={closePokemon}
-        onReady={handleMapReady}
-      />
+      {canStartMap && (
+        <ExpeditionMap
+          roster={roster}
+          mapRef={mapRef}
+          activeBiomeId={activeBiomeId}
+          onBiomeSelect={handleBiomeSelect}
+          onClusterSelect={handleClusterSelect}
+          onMoveEnd={handleMoveEnd}
+          selectedPokemonId={selectedId}
+          onPokemonSelect={handlePokemonSelect}
+          onPokemonDeselect={closePokemon}
+          onReady={handleMapReady}
+        />
+      )}
       <ExpeditionJournal
         roster={roster}
         activeBiomeId={activeBiomeId}
@@ -156,7 +166,9 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      {isIntroShown && <ExpeditionIntro onFinish={finishIntro} />}
+      {isIntroShown && (
+        <ExpeditionIntro onEngage={startMap} onFinish={finishIntro} />
+      )}
       <HintBar isVisible={showHint} />
       <DetailPanel entry={selectedEntry} onClose={closePokemon} />
     </>

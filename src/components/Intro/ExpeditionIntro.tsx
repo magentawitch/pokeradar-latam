@@ -31,6 +31,11 @@ const STAMP_DATE_FORMAT = new Intl.DateTimeFormat("es-AR", {
 });
 
 interface ExpeditionIntroProps {
+  /**
+   * Fires once the explorer is on the way past the closed cover: it opened
+   * (by a click or by itself), or the intro is being skipped.
+   */
+  onEngage: () => void;
   onFinish: () => void;
 }
 
@@ -47,7 +52,7 @@ interface ExpeditionIntroProps {
  * from assistive tech. It uses the bare primitive Content, not shadcn's
  * DialogContent, so no default open/close animation fights the cover.
  */
-export function ExpeditionIntro({ onFinish }: ExpeditionIntroProps) {
+export function ExpeditionIntro({ onEngage, onFinish }: ExpeditionIntroProps) {
   const { status, explorer, saveExplorer } = useExplorer();
   const reduceMotion = useReducedMotion() ?? false;
   const [phase, setPhase] = useState<IntroPhase>("closed");
@@ -64,6 +69,11 @@ export function ExpeditionIntro({ onFinish }: ExpeditionIntroProps) {
   const isReturning = status === "saved" && phase === "closed";
 
   const leave = useCallback(() => setIsLeaving(true), []);
+
+  const hasEngaged = phase !== "closed" || isReturning || isLeaving;
+  useEffect(() => {
+    if (hasEngaged) onEngage();
+  }, [hasEngaged, onEngage]);
 
   // With reduced motion a returning explorer skips the intro entirely.
   useEffect(() => {

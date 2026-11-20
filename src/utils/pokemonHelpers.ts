@@ -53,10 +53,12 @@ export function officialArtworkUrl(id: number) {
 
 /**
  * A generic trainer-class sprite from Pokémon Showdown (80×80 pixel art), for
- * the explorer's ID-card photo. PokéAPI's sprite repo has no people.
+ * the explorer's ID-card photo. PokéAPI's sprite repo has no people. The three
+ * the intro uses are served from `public/trainers/`, so the intro never
+ * depends on hotlinking a third-party host.
  */
 export function trainerSpriteUrl(trainerClass: string) {
-  return `https://play.pokemonshowdown.com/sprites/trainers/${trainerClass}.png`;
+  return `/trainers/${trainerClass}.png`;
 }
 
 /** "#025": dex number padded to Gen 1's three digits. */

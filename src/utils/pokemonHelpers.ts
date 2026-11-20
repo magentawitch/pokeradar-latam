@@ -24,6 +24,17 @@ export function staticSpriteUrl(id: number) {
   return `${SPRITES_BASE_URL}/${id}.png`;
 }
 
+const CRIES_BASE_URL =
+  "https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest";
+
+/**
+ * The cry (Ogg Vorbis) PokéAPI lists as `cries.latest`. Built from the dex id,
+ * so a silhouette tap can play it before the detail request returns.
+ */
+export function cryUrl(id: number) {
+  return `${CRIES_BASE_URL}/${id}.ogg`;
+}
+
 // Stamp book artwork. These URLs are built from the dex id instead of read from
 // PokéAPI's `sprites.other` because, for Gen 1, they follow a fixed pattern in
 // the sprites repo: building them costs no requests, no Zod schema and no

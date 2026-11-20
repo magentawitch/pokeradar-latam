@@ -102,6 +102,11 @@ export function subscribeToRecorded(listener: (id: number) => void) {
   };
 }
 
+/** Reads the store without subscribing: for event handlers. */
+export function isDiscovered(id: number) {
+  return getSnapshot().has(id);
+}
+
 /** Records a discovery once; rediscovering keeps the first date. */
 export function recordDiscovery(id: number, at: Date = new Date()) {
   const current = getSnapshot();

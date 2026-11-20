@@ -12,10 +12,13 @@ import { useMapNavigation } from "@/hooks/useMapNavigation";
 import { useCameraPadding } from "@/hooks/useCameraPadding";
 import { useRecordDiscovery } from "@/hooks/useDiscoveries";
 import { useIntroDismissal } from "@/hooks/useIntroDismissal";
+import { usePokemonCry } from "@/hooks/usePokemonCry";
 import { useSelectedPokemon } from "@/hooks/useSelectedPokemon";
 import type { ViewStateChangeEvent } from "react-map-gl/maplibre";
 import type { BiomeConfig, BiomeRoster, RosterEntry } from "@/lib/biomes/types";
+import { isDiscovered } from "@/lib/discovery/store";
 import { NO_PADDING } from "@/lib/map/reveal";
+import { cryUrl } from "@/utils/pokemonHelpers";
 
 const ExpeditionMap = dynamic(
   () =>
@@ -53,6 +56,17 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
     useSelectedPokemon(rosterIds);
   // Opening a card by any route discovers that Pokémon (its stamp).
   useRecordDiscovery(selectedId);
+  const playCry = usePokemonCry();
+  // Tapping a silhouette is the discovery moment, so it plays the cry. Only
+  // here: a shared link or Back/Forward discovers without a click, and the
+  // browser would block the sound anyway.
+  const handlePokemonSelect = useCallback(
+    (id: number) => {
+      if (!isDiscovered(id)) playCry(cryUrl(id));
+      selectPokemon(id);
+    },
+    [playCry, selectPokemon],
+  );
   const getCameraPadding = useCameraPadding();
   const [isMapReady, setIsMapReady] = useState(false);
   const handleMapReady = useCallback(() => setIsMapReady(true), []);
@@ -114,7 +128,7 @@ export function ExpeditionApp({ roster }: ExpeditionAppProps) {
         onClusterSelect={handleClusterSelect}
         onMoveEnd={handleMoveEnd}
         selectedPokemonId={selectedId}
-        onPokemonSelect={selectPokemon}
+        onPokemonSelect={handlePokemonSelect}
         onPokemonDeselect={closePokemon}
         onReady={handleMapReady}
       />

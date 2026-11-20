@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import squirtle from "../../e2e/fixtures/pokemon-7.json";
 import {
+  cryUrl,
   dreamWorldSpriteUrl,
   formatDexNumber,
   formatHeight,
@@ -44,6 +46,12 @@ describe("staticSpriteUrl", () => {
     expect(staticSpriteUrl(25)).toBe(
       "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
     );
+  });
+});
+
+describe("cryUrl", () => {
+  it("matches the cries.latest URL PokéAPI returns", () => {
+    expect(cryUrl(7)).toBe(squirtle.cries.latest);
   });
 });
 

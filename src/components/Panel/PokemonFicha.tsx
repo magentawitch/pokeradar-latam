@@ -1,5 +1,6 @@
 "use client";
 
+import { CryButton } from "@/components/Panel/CryButton";
 import { FieldNote } from "@/components/Panel/FieldNote";
 import { PokemonDetailError } from "@/components/Panel/PokemonDetailError";
 import { FichaSkeleton } from "@/components/Panel/PokemonDetailSkeleton";
@@ -38,10 +39,18 @@ export function PokemonFicha({ id }: PokemonFichaProps) {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-4">
-        <PokemonSprite
-          animatedSrc={pokemon.spriteAnimated}
-          staticSrc={pokemon.spriteStatic}
-        />
+        <div className="relative shrink-0">
+          <PokemonSprite
+            animatedSrc={pokemon.spriteAnimated}
+            staticSrc={pokemon.spriteStatic}
+          />
+          {pokemon.cry !== null && (
+            <CryButton
+              url={pokemon.cry}
+              className="absolute right-0 bottom-0"
+            />
+          )}
+        </div>
         <div className="flex flex-1 flex-col gap-3">
           <TypeStamps types={pokemon.types} />
           <dl className="grid h-10 grid-cols-2 gap-x-3 font-mono text-sm">

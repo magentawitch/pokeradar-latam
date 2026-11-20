@@ -113,8 +113,9 @@ export function StampBook({ roster }: StampBookProps) {
     () => new Map(),
   );
   const pageScrollRef = useRef<HTMLDivElement>(null);
-  // The pill sits above the overlay (z-60) and stays clickable while any
-  // dialog is open, so one click switches from the card or guide to the book.
+  // The pill sits above the overlay (its top-right container is z-60) and
+  // stays clickable while any dialog is open, so one click switches from the
+  // card or guide to the book.
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeSection = sections[pageIndex] ?? sections[0];
 
@@ -192,7 +193,7 @@ export function StampBook({ roster }: StampBookProps) {
           variant="outline"
           size="lg"
           ref={triggerRef}
-          className="pointer-events-auto absolute top-4 right-4 z-60 h-10 gap-2 rounded-full bg-card/95 px-3.5 shadow-sm md:top-6 md:right-6"
+          className="h-10 gap-2 rounded-full bg-card/95 px-3.5 shadow-sm"
         >
           {/* Keyed by the press count, so each discovery restarts the
               animations; nothing animates before the first one. */}

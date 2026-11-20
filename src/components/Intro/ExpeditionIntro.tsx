@@ -89,9 +89,15 @@ export function ExpeditionIntro({ onFinish }: ExpeditionIntroProps) {
     setPhase("stamping");
   };
 
-  const handleStampLanded = () => {
-    window.setTimeout(leave, STAMP_HOLD_MS);
-  };
+  // The landed stamp holds for a moment, then the journal fades out. An
+  // effect owns the timer, so leaving early (Esc) or unmounting cancels it.
+  const [hasStampLanded, setHasStampLanded] = useState(false);
+  const handleStampLanded = () => setHasStampLanded(true);
+  useEffect(() => {
+    if (!hasStampLanded) return;
+    const timer = window.setTimeout(leave, STAMP_HOLD_MS);
+    return () => window.clearTimeout(timer);
+  }, [hasStampLanded, leave]);
 
   // Server render and hydration: a plain paper sheet, so the map never
   // flashes before we know whether this explorer is new.

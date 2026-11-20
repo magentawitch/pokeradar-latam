@@ -9,7 +9,7 @@ import Map, {
   type ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import { useDiscoveries } from "@/hooks/useDiscoveries";
-import { BIOMES } from "@/lib/biomes/biomes";
+import { BIOMES, getBiome } from "@/lib/biomes/biomes";
 import { revealOrder } from "@/lib/biomes/revealOrder";
 import type { BiomeConfig, BiomeId, BiomeRoster } from "@/lib/biomes/types";
 import { discoveredCount } from "@/lib/discovery/derive";
@@ -71,7 +71,7 @@ export function ExpeditionMap({
 }: ExpeditionMapProps) {
   const reduceMotion = useReducedMotion();
   const discoveries = useDiscoveries();
-  const activeBiome = BIOMES.find((biome) => biome.id === activeBiomeId);
+  const activeBiome = getBiome(activeBiomeId);
 
   // Angular order around the centre. DOM order follows it too, so Tab walks
   // the markers clockwise, the same way the sweep revealed them.

@@ -1,5 +1,5 @@
 import type { HabitatName } from "@/lib/pokeapi/schemas";
-import type { BiomeDefinition } from "./types";
+import type { BiomeConfig, BiomeDefinition, BiomeId } from "./types";
 
 /** Spanish section titles for the destination index. */
 export const HABITAT_LABELS: Record<HabitatName, string> = {
@@ -547,3 +547,12 @@ export const BIOMES = [
     fieldNote: "Islas donde todo evolucionó a su manera.",
   },
 ] as const satisfies readonly BiomeDefinition[];
+
+const BIOMES_BY_ID = new Map<BiomeId, BiomeConfig>(
+  BIOMES.map((biome) => [biome.id, biome]),
+);
+
+/** The location with this id; undefined for null. */
+export function getBiome(id: BiomeId | null): BiomeConfig | undefined {
+  return id === null ? undefined : BIOMES_BY_ID.get(id);
+}

@@ -7,7 +7,7 @@ interface StampMobilePagerProps {
   sections: readonly StampSection[];
   /** Zero-based. */
   pageIndex: number;
-  /** Pages with new stamps not yet visited: their dot gets a vermilion pip. */
+  /** Pages with new stamps not yet visited: their dot gets a vermilion "!". */
   unseenHabitats: ReadonlyMap<HabitatName, number>;
   onPageChange: (pageIndex: number) => void;
 }
@@ -16,7 +16,7 @@ interface StampMobilePagerProps {
  * Phone navigation, in place of the tab row: the habitat title between
  * prev/next arrows, and one dot per habitat in its ink (gold once the page is
  * complete; the current one larger and ringed, unvisited ones with new stamps
- * topped by a vermilion pip). The
+ * topped by a vermilion "!"). The
  * page's own heading stays for assistive tech, so the title here is hidden
  * from it.
  */
@@ -83,7 +83,9 @@ export function StampMobilePager({
                   className="size-2 rounded-full bg-(--habitat-stamp) data-complete:bg-linear-135 data-complete:from-gold-dark data-complete:via-gold-light data-complete:to-gold-dark group-aria-[current=page]:size-3 group-aria-[current=page]:ring-2 group-aria-[current=page]:ring-(--habitat-stamp) group-aria-[current=page]:ring-offset-2 group-aria-[current=page]:ring-offset-card data-complete:group-aria-[current=page]:ring-gold-dark"
                 />
                 {isUnseen && (
-                  <span className="absolute top-0 right-0.5 size-2 rounded-full bg-hanko ring-2 ring-card" />
+                  <span className="absolute -top-0.5 right-0.5 font-display text-xs leading-none font-bold text-hanko">
+                    !
+                  </span>
                 )}
               </button>
             </li>
